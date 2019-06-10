@@ -3,7 +3,7 @@ import re
 from django import forms
 
 from options.options import SysOptions
-from utils.api import UsernameSerializer, serializers
+from utils.api import UsernameSerializer, serializers   # 就是rest framework的serializers
 from utils.constants import Difficulty
 from utils.serializers import LanguageNameMultiChoiceField, SPJLanguageNameChoiceField, LanguageNameChoiceField
 

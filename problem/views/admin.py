@@ -34,7 +34,7 @@ from ..utils import TEMPLATE_BASE, build_problem_template
 class TestCaseZipProcessor(object):
     def process_zip(self, uploaded_zip_file, spj, dir=""):
         try:
-            zip_file = zipfile.ZipFile(uploaded_zip_file, "r")
+            zip_file = zipfile.ZipFile(uploaded_zip_file, "r")  # python内置函数
         except zipfile.BadZipFile:
             raise APIError("Bad zip file")
         name_list = zip_file.namelist()
@@ -42,7 +42,7 @@ class TestCaseZipProcessor(object):
         if not test_case_list:
             raise APIError("Empty file")
 
-        test_case_id = rand_str()
+        test_case_id = rand_str()       # 为啥是随机啊。。
         test_case_dir = os.path.join(settings.TEST_CASE_DIR, test_case_id)
         os.mkdir(test_case_dir)
         os.chmod(test_case_dir, 0o710)
@@ -114,7 +114,7 @@ class TestCaseZipProcessor(object):
 class TestCaseAPI(CSRFExemptAPIView, TestCaseZipProcessor):
     request_parsers = ()
 
-    def get(self, request):
+    def get(self, request): # 好像是在拿一道题的数据
         problem_id = request.GET.get("problem_id")
         if not problem_id:
             return self.error("Parameter error, problem_id is required")
@@ -126,7 +126,7 @@ class TestCaseAPI(CSRFExemptAPIView, TestCaseZipProcessor):
         if problem.contest:
             ensure_created_by(problem.contest, request.user)
         else:
-            ensure_created_by(problem, request.user)
+            ensure_created_by(problem, request.user)    # 权限判断，是否有资格
 
         test_case_dir = os.path.join(settings.TEST_CASE_DIR, problem.test_case_id)
         if not os.path.isdir(test_case_dir):
@@ -144,7 +144,7 @@ class TestCaseAPI(CSRFExemptAPIView, TestCaseZipProcessor):
         response["Content-Length"] = os.path.getsize(file_name)
         return response
 
-    def post(self, request):
+    def post(self, request):        # 和spj有关
         form = TestCaseUploadForm(request.POST, request.FILES)
         if form.is_valid():
             spj = form.cleaned_data["spj"] == "true"
@@ -196,11 +196,12 @@ class ProblemBase(APIView):
         data["languages"] = list(data["languages"])
 
 
-class ProblemAPI(ProblemBase):
+class ProblemAPI(ProblemBase):   
     @problem_permission_required
-    @validate_serializer(CreateProblemSerializer)
+    @validate_serializer(CreateProblemSerializer) # CreateProblemSerializer在哪用到了呢？或者从哪传进来了？
+    # 创建一道新题
     def post(self, request):
-        data = request.data
+        data = request.data # 这里的data是什么类型呢？
         _id = data["_id"]
         if not _id:
             return self.error("Display ID is required")
@@ -214,8 +215,10 @@ class ProblemAPI(ProblemBase):
         # todo check filename and score info
         tags = data.pop("tags")
         data["created_by"] = request.user
+        
         problem = Problem.objects.create(**data)
 
+        # 创建标签
         for item in tags:
             try:
                 tag = ProblemTag.objects.get(name=item)
@@ -229,21 +232,24 @@ class ProblemAPI(ProblemBase):
         problem_id = request.GET.get("id")
         rule_type = request.GET.get("rule_type")
         user = request.user
+        # 编辑这道题的页面
         if problem_id:
-            try:
+            try:    
                 problem = Problem.objects.get(id=problem_id)
                 ensure_created_by(problem, request.user)
                 return self.success(ProblemAdminSerializer(problem).data)
             except Problem.DoesNotExist:
                 return self.error("Problem does not exist")
-
+        # 题目列表的页面
+        # 所有题目
         problems = Problem.objects.filter(contest_id__isnull=True).order_by("-create_time")
+        # 筛选
         if rule_type:
             if rule_type not in ProblemRuleType.choices():
                 return self.error("Invalid rule_type")
             else:
                 problems = problems.filter(rule_type=rule_type)
-
+        # 搜索功能
         keyword = request.GET.get("keyword", "").strip()
         if keyword:
             problems = problems.filter(Q(title__icontains=keyword) | Q(_id__icontains=keyword))
@@ -253,6 +259,7 @@ class ProblemAPI(ProblemBase):
 
     @problem_permission_required
     @validate_serializer(EditProblemSerializer)
+    # 重新编辑好以后，更新一道题
     def put(self, request):
         data = request.data
         problem_id = data.pop("id")
@@ -276,10 +283,12 @@ class ProblemAPI(ProblemBase):
         tags = data.pop("tags")
         data["languages"] = list(data["languages"])
 
+        # put操作，更新这道题的信息
         for k, v in data.items():
             setattr(problem, k, v)
         problem.save()
 
+        # 更新标签
         problem.tags.remove(*problem.tags.all())
         for tag in tags:
             try:
@@ -496,7 +505,7 @@ class AddContestProblemAPI(APIView):
         return self.success()
 
 
-class ExportProblemAPI(APIView):
+class ExportProblemAPI(APIView):        # 导出题目数据
     def choose_answers(self, user, problem):
         ret = []
         for item in problem.languages:
@@ -545,7 +554,7 @@ class ExportProblemAPI(APIView):
         resp["Content-Disposition"] = f"attachment;filename=problem-export.zip"
         return resp
 
-
+# 导入题库，我们用不到
 class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
     request_parsers = ()
 

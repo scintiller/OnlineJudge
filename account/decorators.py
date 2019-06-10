@@ -4,7 +4,7 @@ from contest.models import Contest, ContestType, ContestStatus, ContestRuleType
 from utils.api import JSONResponse, APIError
 from .models import ProblemPermission
 
-
+# Base：需要有登录状态
 class BasePermissionDecorator(object):
     def __init__(self, func):
         self.func = func
@@ -45,7 +45,7 @@ class admin_role_required(BasePermissionDecorator):
         user = self.request.user
         return user.is_authenticated and user.is_admin_role()
 
-
+# 修改上传问题的权限：需要admin
 class problem_permission_required(admin_role_required):
     def check_permission(self):
         if not super(problem_permission_required, self).check_permission():

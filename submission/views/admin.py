@@ -5,6 +5,7 @@ from utils.api import APIView
 from ..models import Submission
 
 
+## root 有权利让某道题重新被评判
 class SubmissionRejudgeAPI(APIView):
     @super_admin_required
     def get(self, request):

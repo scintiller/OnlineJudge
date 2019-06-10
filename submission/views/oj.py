@@ -47,6 +47,7 @@ class SubmissionAPI(APIView):
 
     @validate_serializer(CreateSubmissionSerializer)
     @login_required
+    # 提交一次submission
     def post(self, request):
         data = request.data
         hide_id = False
@@ -58,7 +59,7 @@ class SubmissionAPI(APIView):
             if not contest.problem_details_permission(request.user):
                 hide_id = True
 
-        if data.get("captcha"):
+        if data.get("captcha"): # 验证码？
             if not Captcha(request).check(data["captcha"]):
                 return self.error("Invalid captcha")
         error = self.throttling(request)
@@ -71,6 +72,7 @@ class SubmissionAPI(APIView):
             return self.error("Problem not exist")
         if data["language"] not in problem.languages:
             return self.error(f"{data['language']} is now allowed in the problem")
+        #创建一个submission记录
         submission = Submission.objects.create(user_id=request.user.id,
                                                username=request.user.username,
                                                language=data["language"],
@@ -87,6 +89,7 @@ class SubmissionAPI(APIView):
             return self.success({"submission_id": submission.id})
 
     @login_required
+    # 查看自己提交的历史代码
     def get(self, request):
         submission_id = request.GET.get("id")
         if not submission_id:
@@ -137,19 +140,24 @@ class SubmissionListAPI(APIView):
         myself = request.GET.get("myself")
         result = request.GET.get("result")
         username = request.GET.get("username")
+        # 筛选：只看某道题
         if problem_id:
             try:
                 problem = Problem.objects.get(_id=problem_id, contest_id__isnull=True, visible=True)
             except Problem.DoesNotExist:
                 return self.error("Problem doesn't exist")
             submissions = submissions.filter(problem=problem)
+        # 筛选：只看某个用户（只看自己，或按用户名搜索）
         if (myself and myself == "1") or not SysOptions.submission_list_show_all:
             submissions = submissions.filter(user_id=request.user.id)
         elif username:
             submissions = submissions.filter(username__icontains=username)
+        # 只看AC/WA/...
         if result:
             submissions = submissions.filter(result=result)
+        # 分页
         data = self.paginate_data(request, submissions)
+        # 序列化返回结果
         data["results"] = SubmissionListSerializer(data["results"], many=True, user=request.user).data
         return self.success(data)
 

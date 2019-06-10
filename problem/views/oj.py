@@ -24,12 +24,13 @@ class PickOneAPI(APIView):
 
 class ProblemAPI(APIView):
     @staticmethod
+    # 该用户这道题的状态
     def _add_problem_status(request, queryset_values):
         if request.user.is_authenticated:
             profile = request.user.userprofile
             acm_problems_status = profile.acm_problems_status.get("problems", {})
             oi_problems_status = profile.oi_problems_status.get("problems", {})
-            # paginate data
+            # paginate data / 分页
             results = queryset_values.get("results")
             if results is not None:
                 problems = results
