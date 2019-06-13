@@ -180,6 +180,8 @@ def validate_serializer(serializer):
                 request.serializer = s
                 return view_method(*args, **kwargs)
             else:
+                print("invalid serializer: ")
+                print(s)
                 return self.invalid_serializer(s)
 
         return handle

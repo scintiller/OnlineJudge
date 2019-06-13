@@ -54,7 +54,6 @@ class ProblemCreateTestBase(APITestCase):
         tags = data.pop("tags")
 
         data["languages"] = list(data["languages"])
-
         problem = Problem.objects.create(**data)
 
         for item in tags:
@@ -188,8 +187,8 @@ class ProblemAPITest(ProblemCreateTestBase):
         resp = self.client.get(f"{self.url}?limit=10")
         self.assertSuccess(resp)
 
-    def get_one_problem(self):
-        resp = self.client.get(self.url + "?id=" + self.problem._id)
+    def test_get_one_problem(self):
+        resp = self.client.get(self.url + "?problem_id=" + self.problem._id)
         self.assertSuccess(resp)
 
 

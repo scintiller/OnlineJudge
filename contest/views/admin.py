@@ -78,6 +78,7 @@ class ContestAPI(APIView):
             except Contest.DoesNotExist:
                 return self.error("Contest does not exist")
 
+        # admin比赛列表
         contests = Contest.objects.all().order_by("-create_time")
         if request.user.is_admin():
             contests = contests.filter(created_by=request.user)

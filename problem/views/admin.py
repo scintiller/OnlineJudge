@@ -30,19 +30,21 @@ from ..serializers import (CreateContestProblemSerializer, CompileSPJSerializer,
                            FPSProblemSerializer)
 from ..utils import TEMPLATE_BASE, build_problem_template
 
-
+# 处理上传的测试数据压缩包，将其中的内容存储在data/test_case/<test_case_id>文件夹中
 class TestCaseZipProcessor(object):
     def process_zip(self, uploaded_zip_file, spj, dir=""):
+        # 读取压缩包
         try:
             zip_file = zipfile.ZipFile(uploaded_zip_file, "r")  # python内置函数
         except zipfile.BadZipFile:
             raise APIError("Bad zip file")
+        # 得到.in/.ou的文件名list
         name_list = zip_file.namelist()
         test_case_list = self.filter_name_list(name_list, spj=spj, dir=dir)
         if not test_case_list:
             raise APIError("Empty file")
-
-        test_case_id = rand_str()       # 为啥是随机啊。。
+        # 随机一个test_case_id作为存储数据的文件夹名字，给操作权限
+        test_case_id = rand_str()       
         test_case_dir = os.path.join(settings.TEST_CASE_DIR, test_case_id)
         os.mkdir(test_case_dir)
         os.chmod(test_case_dir, 0o710)
@@ -50,6 +52,7 @@ class TestCaseZipProcessor(object):
         size_cache = {}
         md5_cache = {}
 
+        # 将压缩包里.in/.out文件中的"\r\n"换成"\n"，并重新写到这个目录下
         for item in test_case_list:
             with open(os.path.join(test_case_dir, item), "wb") as f:
                 content = zip_file.read(f"{dir}{item}").replace(b"\r\n", b"\n")
@@ -58,9 +61,9 @@ class TestCaseZipProcessor(object):
                     md5_cache[item] = hashlib.md5(content.rstrip()).hexdigest()
                 f.write(content)
         test_case_info = {"spj": spj, "test_cases": {}}
-
+        
+        # 新建一个info文件，写入相关信息
         info = []
-
         if spj:
             for index, item in enumerate(test_case_list):
                 data = {"input_name": item, "input_size": size_cache[item]}
@@ -114,7 +117,8 @@ class TestCaseZipProcessor(object):
 class TestCaseAPI(CSRFExemptAPIView, TestCaseZipProcessor):
     request_parsers = ()
 
-    def get(self, request): # 好像是在拿一道题的数据
+    # 下载一道题的数据
+    def get(self, request): 
         problem_id = request.GET.get("problem_id")
         if not problem_id:
             return self.error("Parameter error, problem_id is required")
@@ -144,7 +148,8 @@ class TestCaseAPI(CSRFExemptAPIView, TestCaseZipProcessor):
         response["Content-Length"] = os.path.getsize(file_name)
         return response
 
-    def post(self, request):        # 和spj有关
+    # 上传一道题的测试数据
+    def post(self, request):       
         form = TestCaseUploadForm(request.POST, request.FILES)
         if form.is_valid():
             spj = form.cleaned_data["spj"] == "true"
@@ -198,10 +203,10 @@ class ProblemBase(APIView):
 
 class ProblemAPI(ProblemBase):   
     @problem_permission_required
-    @validate_serializer(CreateProblemSerializer) # CreateProblemSerializer在哪用到了呢？或者从哪传进来了？
+    @validate_serializer(CreateProblemSerializer) # CreateProblemSerializer从哪传进来的？
     # 创建一道新题
     def post(self, request):
-        data = request.data # 这里的data是什么类型呢？
+        data = request.data # 这里的data是REST解析后的数据
         _id = data["_id"]
         if not _id:
             return self.error("Display ID is required")
@@ -212,10 +217,10 @@ class ProblemAPI(ProblemBase):
         if error_info:
             return self.error(error_info)
 
-        # todo check filename and score info
+        # tags是多对多的，不能直接用create保存到数据库中，所以这里要pop出来
         tags = data.pop("tags")
         data["created_by"] = request.user
-        
+        # 写入数据库
         problem = Problem.objects.create(**data)
 
         # 创建标签
@@ -229,7 +234,7 @@ class ProblemAPI(ProblemBase):
 
     @problem_permission_required
     def get(self, request):
-        problem_id = request.GET.get("id")
+        problem_id = request.GET.get("id")  # url里的id,也是数据库里的id
         rule_type = request.GET.get("rule_type")
         user = request.user
         # 编辑这道题的页面
@@ -259,10 +264,10 @@ class ProblemAPI(ProblemBase):
 
     @problem_permission_required
     @validate_serializer(EditProblemSerializer)
-    # 重新编辑好以后，更新一道题
+    # 重新编辑好以后，更新这道题
     def put(self, request):
         data = request.data
-        problem_id = data.pop("id")
+        problem_id = data.pop("id") #　这个id应该是这道题在数据库里的id, 同时也是url里的id
 
         try:
             problem = Problem.objects.get(id=problem_id)
@@ -270,7 +275,8 @@ class ProblemAPI(ProblemBase):
         except Problem.DoesNotExist:
             return self.error("Problem does not exist")
 
-        _id = data["_id"]
+        # 判断display_id是否重复
+        _id = data["_id"]   # 这个id是表单里的id
         if not _id:
             return self.error("Display ID is required")
         if Problem.objects.exclude(id=problem_id).filter(_id=_id, contest_id__isnull=True).exists():
@@ -315,6 +321,7 @@ class ProblemAPI(ProblemBase):
         problem.delete()
         return self.success()
 
+#class SolutionVideoAPI(APIView):
 
 class ContestProblemAPI(ProblemBase):
     @validate_serializer(CreateContestProblemSerializer)
@@ -358,6 +365,7 @@ class ContestProblemAPI(ProblemBase):
         problem_id = request.GET.get("id")
         contest_id = request.GET.get("contest_id")
         user = request.user
+        # 返回题目编辑页面
         if problem_id:
             try:
                 problem = Problem.objects.get(id=problem_id)
@@ -365,7 +373,7 @@ class ContestProblemAPI(ProblemBase):
             except Problem.DoesNotExist:
                 return self.error("Problem does not exist")
             return self.success(ProblemAdminSerializer(problem).data)
-
+        # 比赛问题列表
         if not contest_id:
             return self.error("Contest id is required")
         try:
@@ -462,6 +470,8 @@ class MakeContestProblemPublicAPIView(APIView):
 
         if not problem.contest or problem.is_public:
             return self.error("Already be a public problem")
+        
+        # 讲这道比赛题作为一道新题存在数据库中，并能够在普通题目列表中展示
         problem.is_public = True
         problem.save()
         # https://docs.djangoproject.com/en/1.11/topics/db/queries/#copying-model-instances
@@ -492,6 +502,7 @@ class AddContestProblemAPI(APIView):
         if Problem.objects.filter(contest=contest, _id=data["display_id"]).exists():
             return self.error("Duplicate display id in this contest")
 
+        # 将这道题作为一道新题添加到数据库中
         tags = problem.tags.all()
         problem.pk = None
         problem.contest = contest
