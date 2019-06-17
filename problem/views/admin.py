@@ -11,6 +11,8 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import StreamingHttpResponse, FileResponse
 
+from rest_framework.parsers import MultiPartParser, FormParser
+
 from account.decorators import problem_permission_required, ensure_created_by
 from contest.models import Contest, ContestStatus
 from fps.parser import FPSHelper, FPSParser
@@ -28,6 +30,8 @@ from ..serializers import (CreateContestProblemSerializer, CompileSPJSerializer,
                            AddContestProblemSerializer, ExportProblemSerializer,
                            ExportProblemRequestSerialzier, UploadProblemForm, ImportProblemSerializer,
                            FPSProblemSerializer)
+
+
 from ..utils import TEMPLATE_BASE, build_problem_template
 
 # 处理上传的测试数据压缩包，将其中的内容存储在data/test_case/<test_case_id>文件夹中
@@ -206,7 +210,7 @@ class ProblemAPI(ProblemBase):
     @validate_serializer(CreateProblemSerializer) # CreateProblemSerializer从哪传进来的？
     # 创建一道新题
     def post(self, request):
-        data = request.data # 这里的data是REST解析后的数据
+        data = request.data # 这里的data是自定义类APIView解析后的数据
         _id = data["_id"]
         if not _id:
             return self.error("Display ID is required")
@@ -321,7 +325,6 @@ class ProblemAPI(ProblemBase):
         problem.delete()
         return self.success()
 
-#class SolutionVideoAPI(APIView):
 
 class ContestProblemAPI(ProblemBase):
     @validate_serializer(CreateContestProblemSerializer)

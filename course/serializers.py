@@ -5,7 +5,7 @@ from django import forms
 from options.options import SysOptions
 from utils.api import UsernameSerializer, serializers   # 就是rest framework的serializers
 
-from .models import Course
+from .models import Course, PowerPoint
 
 # 读取表单部分，根据表单来设定域
 class CreateOrEditCourseSerializer(serializers.Serializer):
@@ -36,3 +36,9 @@ class CourseSerializer(BaseCourseSerializer):
     class Meta:
         model = Course
         fields = "__all__"
+
+# 返回PPT时的serializer
+class PowerPointSerializer(serializers.ModelSerializer):
+    class Meta():
+        model = PowerPoint
+        fields = "__all__" 

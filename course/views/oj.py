@@ -1,15 +1,17 @@
 from utils.api import APIView
-from ..models import Course
-from ..serializers import CourseSerializer
+from video.api import MediaAPIView
+
+from ..models import Course, PowerPoint
+from ..serializers import CourseSerializer, PowerPointSerializer
 
 class CourseAPI(APIView):
     def get(self, request):
         # 课程详情页
-        course_id = request.GET.get("course_id")
+        course_id = request.GET.get("id")
         if course_id:
             try:
                 course = Course.objects.select_related("created_by")\
-                    .get(display_id=course_id)
+                    .get(id=course_id)
                 return self.success(CourseSerializer(course).data)
             except Course.DoesNotExist:
                 return self.error("课程不存在")
@@ -22,4 +24,18 @@ class CourseAPI(APIView):
         courses = Course.objects.select_related("created_by")
         data = self.paginate_data(request, courses, CourseSerializer)
         return self.success(data)
-    
+
+class PowerPointAPI(MediaAPIView):
+    # 普通用户获取ppt
+    def get(self, request):
+        ppt_id = request.GET.get("ppt_id")
+
+        if ppt_id:
+            # 从数据库中找视频
+            try:
+                video = PowerPoint.objects.get(id=ppt_id)
+                return self.success(PowerPointSerializer(video).data)
+            except PowerPoint.DoesNotExist:
+                return self.error("视频不存在")
+        else:
+            return self.error("请求中需要参数ppt_id")

@@ -12,8 +12,6 @@ class Course(models.Model):
     title = models.TextField()
     # 知识点总结
     content = RichTextField()
-    # ppt
-#   ppt = models.TextFiled()
     # 题目链接
     on_class_problems = models.ManyToManyField(Problem, related_name="course_on_class_problems") # , blank=True
     after_class_problems = models.ManyToManyField(Problem, related_name="course_after_class_problems")
@@ -25,4 +23,9 @@ class Course(models.Model):
     class Meta:
         db_table = "course"
         ordering = ('create_time',)
-        
+
+class PowerPoint(models.Model):
+    ppt = models.FileField(blank=False, null=False, upload_to="course_ppt/")
+    course = models.ForeignKey(Course, null=False, on_delete=models.CASCADE, 
+                                related_name="ppt")
+    timestamp = models.DateTimeField(auto_now_add=True)

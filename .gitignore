@@ -72,6 +72,8 @@ data/public/avatar/*
 !data/public/avatar/default.png
 data/config/*
 !data/config/.gitkeep
+data/media/*
+!data/media/.gitkeep
 
 http_locations.conf
 https_locations.conf

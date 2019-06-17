@@ -16,4 +16,6 @@ urlpatterns = [
     url(r"^api/admin/", include("utils.urls")),
     url(r"^api/", include("course.urls.oj")),
     url(r"^api/admin/", include("course.urls.admin")),
+    url(r"^api/", include("video.urls.oj")),
+    url(r'^api/admin/', include('video.urls.admin')),
 ]

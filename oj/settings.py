@@ -52,6 +52,7 @@ LOCAL_APPS = [
     'options',
     'judge',
     'course',
+    'video',
 ]
 
 INSTALLED_APPS = VENDOR_APPS + LOCAL_APPS
@@ -245,3 +246,6 @@ RAVEN_CONFIG = {
 }
 
 IP_HEADER = "HTTP_X_REAL_IP"
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(DATA_DIR, "media")

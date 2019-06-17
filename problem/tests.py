@@ -129,7 +129,6 @@ class TestCaseUploadAPITest(APITestCase):
                 with open(os.path.join(test_case_dir, name), "r", encoding="utf-8") as f:
                     self.assertEqual(f.read(), name + "\n" + name + "\n" + "end")
 
-
 class ProblemAdminAPITest(APITestCase):
     def setUp(self):
         self.url = self.reverse("problem_admin_api")

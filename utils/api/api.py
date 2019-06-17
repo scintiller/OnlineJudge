@@ -62,6 +62,23 @@ class APIView(View):
     request_parsers = (JSONParser, URLEncodedParser)
     response_class = JSONResponse
 
+    def dispatch(self, request, *args, **kwargs):
+        if self.request_parsers:
+            try:
+                request.data = self._get_request_data(self.request)
+            except ValueError as e:
+                return self.error(err="invalid-request", msg=str(e))
+        try:
+            return super(APIView, self).dispatch(request, *args, **kwargs)
+        except APIError as e:
+            ret = {"msg": e.msg}
+            if e.err:
+                ret["err"] = e.err
+            return self.error(**ret)
+        except Exception as e:
+            logger.exception(e)
+            return self.server_error()
+
     def _get_request_data(self, request):
         if request.method not in ["GET", "DELETE"]:
             body = request.body
@@ -73,7 +90,7 @@ class APIView(View):
                     break
             # else means the for loop is not interrupted by break
             else:
-                raise ValueError("unknown content_type '%s'" % content_type)
+                raise ValueError("Only accept certain content type(see in APIView class), unknown content_type '%s'" % content_type)
             if body:
                 return parser.parse(body)
             return {}
@@ -139,22 +156,7 @@ class APIView(View):
                 "total": count}
         return data
 
-    def dispatch(self, request, *args, **kwargs):
-        if self.request_parsers:
-            try:
-                request.data = self._get_request_data(self.request)
-            except ValueError as e:
-                return self.error(err="invalid-request", msg=str(e))
-        try:
-            return super(APIView, self).dispatch(request, *args, **kwargs)
-        except APIError as e:
-            ret = {"msg": e.msg}
-            if e.err:
-                ret["err"] = e.err
-            return self.error(**ret)
-        except Exception as e:
-            logger.exception(e)
-            return self.server_error()
+
 
 
 class CSRFExemptAPIView(APIView):

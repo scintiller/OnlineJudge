@@ -7,7 +7,7 @@ from utils.api import UsernameSerializer, serializers   # 就是rest framework�
 from utils.constants import Difficulty
 from utils.serializers import LanguageNameMultiChoiceField, SPJLanguageNameChoiceField, LanguageNameChoiceField
 
-from .models import Problem, ProblemRuleType, ProblemTag, ProblemIOMode#, SolutionVideo
+from .models import Problem, ProblemRuleType, ProblemTag, ProblemIOMode
 from .utils import parse_problem_template
 
 
@@ -135,11 +135,6 @@ class ProblemSafeSerializer(BaseProblemSerializer):
                    "spj_code", "spj_version", "spj_compile_ok",
                    "difficulty", "submission_number", "accepted_number", "statistic_info")
 
-
-# class SolutionVideoSerializers(serializers.ModelSerializer):
-#     class Meta():
-#         model = SolutionVideo
-#         exclude = ('created_by',)
 
 class ContestProblemMakePublicSerializer(serializers.Serializer):
     id = serializers.IntegerField()

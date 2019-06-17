@@ -1,10 +1,14 @@
+from rest_framework.parsers import MultiPartParser, FormParser
+import json
+
 from utils.api import APIView, validate_serializer
+from video.api import MediaAPIView
 
 from problem.models import Problem
 
-from ..models import Course
+from ..models import Course, PowerPoint
 from ..serializers import (CreateCourseSerializer, EditCourseSerializer, 
-                           CourseAdminSerializer, CourseSerializer)
+                           CourseAdminSerializer, CourseSerializer, PowerPointSerializer)
 from account.decorators import problem_permission_required, ensure_created_by
 
 class CourseAPI(APIView):
@@ -83,11 +87,11 @@ class CourseAPI(APIView):
 
 #   @problem_permission_required
     def delete(self, request):
-        id = request.GET.get("id")
-        if not id:
+        course_id = request.GET.get("id")
+        if not course_id:
             return self.error("缺少id号")
         try:
-            course = Course.objects.get(id=id)
+            course = Course.objects.get(id=course_id)
         except Course.DoesNotExist:
             return self.error("问题不存在")
         ensure_created_by(course, request.user)
@@ -130,3 +134,44 @@ class CourseAPI(APIView):
         #　保存课后习题
         course = self.add_after_class_problems(course, after_class_problems)
         return course
+
+# PPT相关接口
+class PowerPointAPI(MediaAPIView):
+    parser_classes = (MultiPartParser, FormParser)
+    
+    # 添加课程的PPT
+    @problem_permission_required
+    def post(self, request):
+        # 从request里取出ppt
+        ppt = request.data.get("ppt", None)
+        if ppt==None:
+            return self.error("没有上传ppt")
+        data = {'ppt': ppt}
+        # 关联问题
+        course_id = request.data.get("course_id",None)
+        if course_id==None:
+            return self.error("没有课程id")
+        try:    
+            course = Course.objects.get(id=course_id)
+        except Problem.DoesNotExist:
+            return self.error("课程不存在")
+        data["course"] = course
+        # 存储到数据库中
+        powerpoint = PowerPoint.objects.create(**data)
+        # 返回success
+        return self.success(PowerPointSerializer(powerpoint).data)
+
+    # 删除一个ppt（根据ppt_id）
+    @problem_permission_required
+    def delete(self, request):
+        # 从数据库中找ppt
+        ppt_id = request.GET.get("id")
+        if not ppt_id:
+            return self.error("缺少id号")
+        try:
+            ppt = PowerPoint.objects.get(id=ppt_id)
+        except PowerPoint.DoesNotExist:
+            return self.error("ppt不存在")
+        # 删除ppt
+        ppt.delete()
+        return self.success()
