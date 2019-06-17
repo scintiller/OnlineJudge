@@ -25,10 +25,10 @@ class CourseAPI(APIView):
             return self.error("所填课程ID号已存在")
         # 课程创建者
         data["created_by"] = request.user
-        # 创建题目
+        # 创建课程，并添加课程练习和课后作业
         course = self.create_course(data)
         if course == None:
-            return self.error("添加的题目不存在")
+            return self.error("添加的课程不存在")
         return self.success(CourseAdminSerializer(course).data)
     
 #    @course_permission_required

@@ -13,7 +13,7 @@ class Course(models.Model):
     # 知识点总结
     content = RichTextField()
     # 题目链接
-    on_class_problems = models.ManyToManyField(Problem, related_name="course_on_class_problems") # , blank=True
+    on_class_problems = models.ManyToManyField(Problem, related_name="course_on_class_problems") 
     after_class_problems = models.ManyToManyField(Problem, related_name="course_after_class_problems")
     # 创建信息
     create_time = models.DateTimeField(auto_now_add=True)

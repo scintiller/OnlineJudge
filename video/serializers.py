@@ -1,12 +1,7 @@
 from rest_framework import serializers
-from .models import SolutionVideo
+from .models import ProblemSolution
 
-class UploadSolutionVideoSerializer(serializers.Serializer):
-    video = serializers.FileField()
-    problem_id = serializers.IntegerField()
-
-
-class SolutionVideoSerializer(serializers.ModelSerializer):
+class ProblemSolutionSerializer(serializers.ModelSerializer):
     class Meta():
-        model = SolutionVideo
+        model = ProblemSolution
         fields = "__all__" 

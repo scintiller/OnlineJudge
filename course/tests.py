@@ -128,12 +128,12 @@ class PowerPointAdminAPITest(PowerPointTestBase, CourseCreateTestBase):
         data = {'ppt': self.created_file, 'course_id': self.course.id}
         # print("admin ppt upload. url: ", self.url, " / data: ", data)
         resp = self.client.post(self.url, data, format="multipart")
-        print("ppt information: ", resp.data)
+        # print("ppt information: ", resp.data)
         self.assertSuccess(resp)
         return resp
 
     # 测试ppt删除
-    def test_delete_solution_video(self):
+    def test_delete_ppt(self):
         # 上传ppt
         resp = self.test_upload_ppt()
         # 删除视频

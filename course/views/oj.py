@@ -31,10 +31,10 @@ class PowerPointAPI(MediaAPIView):
         ppt_id = request.GET.get("ppt_id")
 
         if ppt_id:
-            # 从数据库中找视频
+            # 从数据库中找ppt
             try:
-                video = PowerPoint.objects.get(id=ppt_id)
-                return self.success(PowerPointSerializer(video).data)
+                ppt = PowerPoint.objects.get(id=ppt_id)
+                return self.success(PowerPointSerializer(ppt).data)
             except PowerPoint.DoesNotExist:
                 return self.error("视频不存在")
         else:

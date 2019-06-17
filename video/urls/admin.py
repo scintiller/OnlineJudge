@@ -1,6 +1,6 @@
 from django.conf.urls import url
-from ..views.admin import SolutionVideoAPI
+from ..views.admin import ProblemSolutionAPI
 
 urlpatterns = [
-    url(r'^upload/solution_video/?$', SolutionVideoAPI.as_view(), name='solution_video_admin_api'),
+    url(r'^problem/solution/?$', ProblemSolutionAPI.as_view(), name='problem_solution_admin_api'),
 ]
