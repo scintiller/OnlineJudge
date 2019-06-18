@@ -1,4 +1,5 @@
 import ipaddress
+import datetime
 
 from account.decorators import login_required, check_contest_permission
 from contest.models import ContestStatus, ContestRuleType
@@ -159,6 +160,31 @@ class SubmissionListAPI(APIView):
         data = self.paginate_data(request, submissions)
         # 序列化返回结果
         data["results"] = SubmissionListSerializer(data["results"], many=True, user=request.user).data
+        return self.success(data)
+
+
+class SubmissionRecordAPI(APIView):
+    @login_required
+    def get(self, request):
+        if not request.GET.get("start_date"):
+            return self.error("Parameter error")
+        if not request.GET.get("end_date"):
+            return self.error("Parameter error")
+
+        submissions = Submission.objects.filter(contest_id__isnull=True)
+        username = request.GET.get("username")
+        if not username:
+            username = request.user.username
+
+        start_date = datetime.strptime(request.GET.get("start_date"), '%Y-%m-%d')
+        end_date = datetime.strptime(request.GET.get("end_date"), '%Y-%m-%d')
+        # 筛选日期
+        submissions = submissions.filter(create_time_field__range=(start_date, end_date))
+        # 筛选：只看某个用户
+        if username:
+            submissions = submissions.filter(username=username)
+        data = {}
+        data["results"] = SubmissionListSerializer(submissions, many=True).data
         return self.success(data)
 
 

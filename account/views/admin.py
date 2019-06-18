@@ -13,9 +13,49 @@ from utils.shortcuts import rand_str
 
 from ..decorators import super_admin_required
 from ..models import AdminType, ProblemPermission, User, UserProfile, Class
-from ..serializers import EditUserSerializer, UserAdminSerializer, GenerateUserSerializer
+from ..serializers import EditUserSerializer, UserAdminSerializer, GenerateUserSerializer, UsernameSerializer
 from ..serializers import ImportUserSeralizer
 
+
+class SetClassAPI(APIView):
+    def get(self, request):
+        class_name = request.GET("class_name")
+        user_name = request.GET("user_name")
+        if class_name:
+            try:
+                c = Class.objects.get(class_name=class_name)
+            except Class.DoesNotExist:
+                return self.error("Class does not exist")
+        else:
+            return self.error("class name not exist")
+        if user_name:
+            try:
+                student = User.objects.get(username=class_name)
+            except User.DoesNotExist:
+                return self.error("Student does not exist")
+        else:
+            return self.error("user name not exist")
+
+        student.in_class = c
+        student.save()
+
+        return self.success()
+
+
+class ClassStudentAPI(APIView):
+    def get(self, request):
+        class_name = request.GET("class_name")
+        if class_name:
+            try:
+                c = Class.objects.get(class_name=class_name)
+            except Class.DoesNotExist:
+                return self.error("Class does not exist")
+            students = c.user_set.all()
+        else:
+            self.error("class name not exist")
+        data = {}
+        data["results"] = UsernameSerializer(students, many=True).data
+        return self.success(data)
 
 class ClassAdminAPI(APIView):
     @super_admin_required
