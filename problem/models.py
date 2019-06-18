@@ -6,7 +6,6 @@ from contest.models import Contest
 from utils.models import RichTextField
 from utils.constants import Choices
 
-
 class ProblemTag(models.Model):
     name = models.TextField()
 
@@ -95,3 +94,16 @@ class Problem(models.Model):
     def add_ac_number(self):
         self.accepted_number = models.F("accepted_number") + 1
         self.save(update_fields=["accepted_number"])
+
+class Comment(models.Model):
+    # 评论内容
+    content = models.TextField()
+    # 对哪条评论进行回复，记下那条评论的内容，可以为空
+    # reply_to = models.TextField(blank=True, null=True)
+    reply_to = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE)
+    # 问题
+    problem = models.ForeignKey(Problem, null=False, on_delete=models.CASCADE,
+                                related_name="comment")
+    # 创建信息
+    create_time = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)

@@ -6,8 +6,10 @@ from utils.models import RichTextField
 from problem.models import Problem
 
 class Course(models.Model):
-    # 第几节课
-    display_id = models.TextField(db_index=True)
+    # 第几章
+    charpter = models.TextField()
+    # 第几节
+    section = models.TextField()
     # 标题
     title = models.TextField()
     # 知识点总结
@@ -25,7 +27,7 @@ class Course(models.Model):
         ordering = ('create_time',)
 
 class PowerPoint(models.Model):
-    ppt = models.FileField(blank=False, null=False, upload_to="course_ppt/")
+    ppt = models.FileField(blank=False, null=False, upload_to="ppt/")
     course = models.ForeignKey(Course, null=False, on_delete=models.CASCADE, 
                                 related_name="ppt")
     timestamp = models.DateTimeField(auto_now_add=True)

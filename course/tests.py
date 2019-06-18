@@ -10,7 +10,7 @@ from .views.admin import CourseAPI
 
 from problem.tests import DEFAULT_PROBLEM_DATA, ProblemCreateTestBase
 
-DEFAULT_COURSE_DATA = {"display_id": "A-1", "title": "test course", 
+DEFAULT_COURSE_DATA = {"charpter": "初级班", "section": "第一节", "title": "test course", 
                         "content": "<p>test course</p>", "on_class_problems": ["A-110"],
                         "after_class_problems": ["A-110"],} 
                         #  
@@ -92,6 +92,7 @@ class CourseAPITest(CourseCreateTestBase):
     def test_get_course_list(self):
         resp = self.client.get(f"{self.url}?limit=10")
         # print("course list get url: ", f"{self.url}?limit=10")
+        
         self.assertSuccess(resp)
 
     def test_get_one_course(self):
@@ -159,12 +160,14 @@ class PowerPointAPITest(PowerPointTestBase, CourseCreateTestBase):
         data = {'ppt': self.created_file, 'course_id': self.course.id}
         resp = self.client.post(self.upload_url, data, format="multipart")
         self.ppt_data = resp.data['data']
+        # print("ppt data: ", resp.data["data"])
         # 创建普通用户
         self.create_user("test", "test123")
 
     def test_get_ppt(self):
-        # print("get ppt url: ", self.url + "?ppt_id="+ str(self.ppt_data["id"]))
-        resp = self.client.get(self.url + "?ppt_id="+ str(self.ppt_data["id"])) # 
+        # print("get ppt url: ", self.url + "?course_id="+ str(self.ppt_data["course"]))
+        resp = self.client.get(self.url + "?course_id="+ str(self.ppt_data["course"])) # 
+        # print("get ppt resp.data: ", resp.data)
         self.assertSuccess(resp)    
 
     

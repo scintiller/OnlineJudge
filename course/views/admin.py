@@ -12,17 +12,16 @@ from ..serializers import (CreateCourseSerializer, EditCourseSerializer,
 from account.decorators import problem_permission_required, ensure_created_by
 
 class CourseAPI(APIView):
-#    @course_permission_requred
+#    @course_permission_requred 需要添加课程的权限
     @validate_serializer(CreateCourseSerializer)
     # 创建一节新的课
     def post(self, request):
         data = request.data
         # 验证ID号在数据库中合法
-        display_id = data["display_id"]
-        if not display_id:
-            return self.error("需要填写课程ID号")
-        if Course.objects.filter(display_id=display_id).exists():
-            return self.error("所填课程ID号已存在")
+        charpter = data["charpter"]
+        section = data['section']
+        if Course.objects.filter(charpter=charpter, section=section).exists():
+            return self.error("所填课程的章节和序号已存在")
         # 课程创建者
         data["created_by"] = request.user
         # 创建课程，并添加课程练习和课后作业

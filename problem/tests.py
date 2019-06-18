@@ -320,3 +320,38 @@ ddd
         self.assertEqual(ret["prepend"], "aaa\n")
         self.assertEqual(ret["template"], "")
         self.assertEqual(ret["append"], "ccc\n")
+
+class CommentAPITest(APITestCase):
+    def setup(self):
+        self.create_user("test", "test123")
+
+    # 测试对问题进行评论
+    def test_post_comment(self):
+        # url
+        self.url = self.reverse("comment_api")
+        # 新建题目
+        super_admin = self.create_super_admin()
+        self.problem = ProblemCreateTestBase.add_problem(DEFAULT_PROBLEM_DATA, super_admin)
+        # 新建评论
+        self.comment = {"content": "Test Test", "problem_id": self.problem.id} #"reply_to": "reply to Test Test",
+        print("post comment. url: ", self.url, "comment: ", self.comment, "\n")
+        # 发表评论
+        resp = self.client.post(self.url, data = self.comment)
+        self.assertSuccess(resp)
+        return resp
+
+    # 测试回复评论
+    def test_reply_to_comment(self):
+        resp = self.test_post_comment()
+        self.comment = {"content": "Test Test", "reply_to_id": resp.data["data"]["id"], "problem_id": self.problem.id}
+        print("reply comment. url: ", self.url, "comment: ", self.comment, "\n")
+        resp = self.client.post(self.url, data = self.comment)
+        self.assertSuccess(resp)
+        return resp
+
+    def test_get_comment(self):
+        self.test_reply_to_comment()
+        resp = self.client.get(self.url + "?problem_id=" + str(self.problem.id) )
+        print("get comment list. url: ", self.url + "?problem_id=" + str(self.problem.id), "resp.data: ", resp.data, "\n")
+        self.assertSuccess(resp)
+        return resp

@@ -9,8 +9,9 @@ from .models import Course, PowerPoint
 
 # 读取表单部分，根据表单来设定域
 class CreateOrEditCourseSerializer(serializers.Serializer):
-    display_id = serializers.CharField(max_length=32, allow_blank=True, allow_null=True)
     title = serializers.CharField(max_length=1024)
+    charpter = serializers.CharField(max_length=32)
+    section = serializers.CharField(max_length=32)
     content = serializers.CharField()
     on_class_problems = serializers.ListField(child=serializers.CharField(max_length=32), allow_empty=False)
     after_class_problems = serializers.ListField(child=serializers.CharField(max_length=32), allow_empty=False)
@@ -42,3 +43,7 @@ class PowerPointSerializer(serializers.ModelSerializer):
     class Meta():
         model = PowerPoint
         fields = "__all__" 
+
+# 返回PPT名字的serializer
+class PowerPointNameSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=1024)

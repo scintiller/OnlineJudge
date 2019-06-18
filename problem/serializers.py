@@ -7,7 +7,7 @@ from utils.api import UsernameSerializer, serializers   # 就是rest framework�
 from utils.constants import Difficulty
 from utils.serializers import LanguageNameMultiChoiceField, SPJLanguageNameChoiceField, LanguageNameChoiceField
 
-from .models import Problem, ProblemRuleType, ProblemTag, ProblemIOMode
+from .models import Problem, ProblemRuleType, ProblemTag, ProblemIOMode, Comment
 from .utils import parse_problem_template
 
 
@@ -275,3 +275,16 @@ class FPSProblemSerializer(serializers.Serializer):
     template = serializers.ListField(child=serializers.DictField(), allow_empty=True, allow_null=True)
     append = serializers.ListField(child=serializers.DictField(), allow_empty=True, allow_null=True)
     prepend = serializers.ListField(child=serializers.DictField(), allow_empty=True, allow_null=True)
+
+# 读取表单部分，根据表单来设定域
+class CreateCommentSerializer(serializers.Serializer):
+    content = serializers.CharField()
+    reply_to_id = serializers.IntegerField(required=False) # 怎么设置空allow_blank=True
+    problem_id = serializers.IntegerField()
+
+# 返回course页面的时候用到，根据模型来设定域
+class CommentSerializer(serializers.ModelSerializer):
+    created_by = UsernameSerializer()
+    class Meta:
+        model = Comment
+        fields = "__all__"

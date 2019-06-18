@@ -73,3 +73,4 @@ class SimditorFileUploadAPIView(CSRFExemptAPIView):
             "msg": "Success",
             "file_path": f"{settings.UPLOAD_PREFIX}/{file_name}",
             "file_name": file.name})
+            

@@ -1,9 +1,9 @@
 import random
 from django.db.models import Q, Count
-from utils.api import APIView
+from utils.api import APIView, validate_serializer
 from account.decorators import check_contest_permission
-from ..models import ProblemTag, Problem, ProblemRuleType
-from ..serializers import ProblemSerializer, TagSerializer, ProblemSafeSerializer
+from ..models import ProblemTag, Problem, ProblemRuleType, Comment
+from ..serializers import ProblemSerializer, TagSerializer, ProblemSafeSerializer, CreateCommentSerializer, CommentSerializer
 from contest.models import ContestRuleType
 
 
@@ -116,3 +116,34 @@ class ContestProblemAPI(APIView):
         else:
             data = ProblemSafeSerializer(contest_problems, many=True).data
         return self.success(data)
+
+class CommentAPI(APIView):
+    @validate_serializer(CreateCommentSerializer)
+    def post(self, request):
+        data = request.data
+        # 查找problem
+        problem_id = data.pop("problem_id")
+        if not problem_id:
+            return self.error("需要问题ID")
+        data['problem'] = Problem.objects.get(id=problem_id)
+        # 创建者
+        data['created_by'] = request.user
+        # 查找reply_to评论
+        if data.get("reply_to_id"):
+            reply_to_id = data.pop("reply_to_id")
+            data['reply_to'] = Comment.objects.get(id=reply_to_id)
+        # 创建评论
+        comment = Comment.objects.create(**data)
+        # 返回成功
+        return self.success(CommentSerializer(comment).data)
+    
+    def get(self, request):
+        # 查找题目
+        problem_id = request.GET.get("problem_id")
+        try:    
+            problem = Problem.objects.get(id=problem_id)
+        except Problem.DoesNotExist:
+            return self.error("Problem does not exist")
+        # 查询这道题的所有评论
+        comments = Comment.objects.filter(problem=problem)
+        return self.success(self.paginate_data(request, comments, CommentSerializer))

@@ -2,7 +2,7 @@ from utils.api import APIView
 from video.api import MediaAPIView
 
 from ..models import Course, PowerPoint
-from ..serializers import CourseSerializer, PowerPointSerializer
+from ..serializers import CourseSerializer, PowerPointSerializer, PowerPointNameSerializer
 
 class CourseAPI(APIView):
     def get(self, request):
@@ -28,14 +28,16 @@ class CourseAPI(APIView):
 class PowerPointAPI(MediaAPIView):
     # 普通用户获取ppt
     def get(self, request):
-        ppt_id = request.GET.get("ppt_id")
+        course_id = request.GET.get("course_id")
 
-        if ppt_id:
+        if course_id:       # str[str.rfind("/")+1:]
             # 从数据库中找ppt
             try:
-                ppt = PowerPoint.objects.get(id=ppt_id)
-                return self.success(PowerPointSerializer(ppt).data)
+                ppt = PowerPoint.objects.filter(course=course_id)[0]
+                url = PowerPointSerializer(ppt).data['ppt']
+                ppt_name = {"name": url[url.rfind("/")+1:]} 
+                return self.success(PowerPointNameSerializer(ppt_name).data)
             except PowerPoint.DoesNotExist:
                 return self.error("视频不存在")
         else:
-            return self.error("请求中需要参数ppt_id")
+            return self.error("请求中需要参数course_id")
