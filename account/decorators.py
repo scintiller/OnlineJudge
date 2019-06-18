@@ -46,6 +46,7 @@ class admin_role_required(BasePermissionDecorator):
         return user.is_authenticated and user.is_admin_role()
 
 # 修改上传问题的权限：需要admin
+# admin也就是老师
 class problem_permission_required(admin_role_required):
     def check_permission(self):
         if not super(problem_permission_required, self).check_permission():

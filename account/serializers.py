@@ -2,7 +2,7 @@ from django import forms
 
 from utils.api import serializers, UsernameSerializer
 
-from .models import AdminType, ProblemPermission, User, UserProfile
+from .models import AdminType, ProblemPermission, User, UserProfile, Class
 
 
 class UserLoginSerializer(serializers.Serializer):
@@ -140,4 +140,13 @@ class RankInfoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserProfile
+        fields = "__all__"
+
+
+class ClassSerializer(serializers.ModelSerializer):
+    teacher = UsernameSerializer()
+    TA = UsernameSerializer()
+
+    class Meta:
+        model = Class
         fields = "__all__"
