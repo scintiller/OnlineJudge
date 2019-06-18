@@ -67,6 +67,27 @@ class ContestListAPI(APIView):
         return self.success(self.paginate_data(request, contests, ContestSerializer))
 
 
+class ContestReverseListAPI(APIView):
+    def get(self, request):
+        contests = Contest.objects.select_related("created_by").filter(visible=True).order_by('-create_time')
+        keyword = request.GET.get("keyword")
+        rule_type = request.GET.get("rule_type")
+        status = request.GET.get("status")
+        if keyword:
+            contests = contests.filter(title__contains=keyword)
+        if rule_type:
+            contests = contests.filter(rule_type=rule_type)
+        if status:
+            cur = now()
+            if status == ContestStatus.CONTEST_NOT_START:
+                contests = contests.filter(start_time__gt=cur)
+            elif status == ContestStatus.CONTEST_ENDED:
+                contests = contests.filter(end_time__lt=cur)
+            else:
+                contests = contests.filter(start_time__lte=cur, end_time__gte=cur)
+        return self.success(self.paginate_data(request, contests, ContestSerializer))
+
+
 class ContestPasswordVerifyAPI(APIView):
     @validate_serializer(ContestPasswordVerifySerializer)
     @login_required
