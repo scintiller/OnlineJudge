@@ -103,19 +103,34 @@ class CourseAPITest(CourseCreateTestBase):
         # 新建课程
         admin = self.create_admin(login=False)
         self.course = self.add_course(DEFAULT_COURSE_DATA, admin)
-        # 新建普通用户
-        self.create_user("test", "test123")
+        
 
+   
     def test_get_course_list(self):
+         # 测试有权限的用户
+        self.create_user("test", "test123", paid=True)
         resp = self.client.get(f"{self.url}?limit=10")
         # print("course list get url: ", f"{self.url}?limit=10")
-        
         self.assertSuccess(resp)
+        
+    def test_get_course_list_without_permission(self):
+        # 测试没有权限的用户
+        self.create_user("test", "test123", paid=False)
+        resp = self.client.get(f"{self.url}?limit=10")
+        self.assertFailed(resp)
 
     def test_get_one_course(self):
+         # 测试有权限的用户
+        self.create_user("test", "test123", paid=True)
         resp = self.client.get(self.url + "?id=" + str(self.course.id))
         # print("get one course url: ", self.url + "?id=" + str(self.course.id))
         self.assertSuccess(resp)
+
+    def test_get_one_course_without_permission(self):
+        # 测试没有权限的用户
+        self.create_user("test", "test123", paid=False)
+        resp = self.client.get(self.url + "?id=" + str(self.course.id))
+        self.assertFailed(resp)
 
 # 测试ppt admin接口
 class PowerPointTestBase(APITestCase):
@@ -132,13 +147,14 @@ class PowerPointAdminAPITest(PowerPointTestBase, CourseCreateTestBase):
     def setUp(self):
         self.url = self.reverse("ppt_admin_api")
         # 生成文件
-        self.super_admin = self.create_super_admin()
         self.created_file = self.create_test_file('/tmp/test_upload')
         # 新建题目
         admin = self.create_admin()
         ProblemCreateTestBase.add_problem(DEFAULT_PROBLEM_DATA, admin)
         # 新建课程
         self.course = self.add_course(DEFAULT_COURSE_DATA, admin)
+        # super_admin
+        self.super_admin = self.create_super_admin()
     
     # 测试ppt上传
     def test_upload_ppt(self):
@@ -167,24 +183,24 @@ class PowerPointAPITest(PowerPointTestBase, CourseCreateTestBase):
         self.url = self.reverse("ppt_api")
         self.upload_url = self.reverse("ppt_admin_api")
         # 生成文件
-        self.super_admin = self.create_super_admin()
         self.created_file = self.create_test_file('/tmp/test_upload')
         # 新建题目
-        admin = self.create_admin()
-        ProblemCreateTestBase.add_problem(DEFAULT_PROBLEM_DATA, admin)
+        self.super_admin = self.create_super_admin()
+        ProblemCreateTestBase.add_problem(DEFAULT_PROBLEM_DATA, self.super_admin)
         # 新建课程
-        self.course = self.add_course(DEFAULT_COURSE_DATA, admin)
+        self.course = self.add_course(DEFAULT_COURSE_DATA, self.super_admin)
         # 新建ppt
         data = {'ppt': self.created_file, 'course_id': self.course.id}
         resp = self.client.post(self.upload_url, data, format="multipart")
-        self.ppt_data = resp.data['data']
-        # print("ppt data: ", resp.data["data"])
+        self.data = resp.data["data"]
+        print("data: ", self.data)
         # 创建普通用户
-        self.create_user("test", "test123")
+        self.user = self.create_user("test", "test123")
+        
 
     def test_get_ppt(self):
-        # print("get ppt url: ", self.url + "?course_id="+ str(self.ppt_data["course"]))
-        resp = self.client.get(self.url + "?course_id="+ str(self.ppt_data["course"])) # 
+        url = self.url + "?course_id="+ str(self.data["course"])
+        resp = self.client.get(url) # 
         # print("get ppt resp.data: ", resp.data)
         self.assertSuccess(resp)    
         

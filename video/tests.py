@@ -74,14 +74,14 @@ class SolutionVideoAPITest(SolutionVideoTestBase):
         self.super_admin = self.create_super_admin()
         created_file = self.create_test_file('/tmp/test_upload')
         # 新建题解
-        self.data = {'video': created_file, 'problem_id': problem.id}
+        self.data = {'video': created_file, 'problem_id': problem.id, 'text': "test solution"}
         resp = self.client.post(self.upload_url, self.data, format="multipart")
         self.video_data = resp.data['data']
         # 创建普通用户
         self.create_user("test", "test123")
 
-    # def test_get_video(self):
-    #     resp = self.client.get(self.url + "?id="+ str(self.video_data["id"])) 
-    #     # print("普通用户访问url:", self.url + "?id="+ str(self.video_data["id"]))
-    #     print("普通用户访问的返回resp.data: ", resp.data)
-    #     self.assertSuccess(resp)
+    def test_get_video(self):
+        resp = self.client.get(self.url + "?problem_id="+ str(self.video_data["problem"])) 
+        print("普通用户访问url:", self.url + "?problem_id="+ str(self.video_data["problem"]))
+        print("普通用户访问的返回resp.data: ", resp.data)
+        self.assertSuccess(resp)

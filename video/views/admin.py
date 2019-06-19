@@ -17,14 +17,14 @@ class ProblemSolutionAPI(MediaAPIView):
     @problem_permission_required
     def post(self, request):
         # 视频题解
-        video_solution = request.data.get("video", None)
+        video = request.data.get("video", None)
         data = {}
-        if video_solution is not None:
-            data['video_solution'] = video_solution
+        if video is not None:
+            data['video'] = video
         # 文字题解
-        text_solution = request.data.get("text", None)
-        if text_solution is not None:
-            data["text_solution"] = text_solution
+        text = request.data.get("text", None)
+        if text is not None:
+            data["text"] = text
         # 关联问题
         problem_id = request.data.get("problem_id",None)
         if problem_id==None:

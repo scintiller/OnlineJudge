@@ -16,6 +16,10 @@ logger = logging.getLogger(__name__)
 
 class CourseAPI(APIView):
     def get(self, request):
+        # 判断user权限
+        if not request.user.paid:
+            return self.error("没有查看课程权限")
+            
         # 课程详情页
         course_id = request.GET.get("id")
         if course_id:
@@ -51,6 +55,8 @@ class PowerPointAPI(MediaAPIView):
                 return self.error("ppt不存在")
         else:
             return self.error("请求中需要参数course_id")
+
+###########################   File Download / File Upload  ###########################
 
 class FileDownloadAPI(APIView):
     def get(self, request):
