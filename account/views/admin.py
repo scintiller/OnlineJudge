@@ -59,7 +59,7 @@ class ClassAPI(APIView):
             "user_name": username,
             "classes": []
         }
-        self.success(result)
+        return self.success(result)
 
 
 class SetClassAPI(APIView):
