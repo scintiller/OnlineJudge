@@ -185,7 +185,7 @@ class PowerPointAPITest(PowerPointTestBase, CourseCreateTestBase):
     def test_get_ppt(self):
         # print("get ppt url: ", self.url + "?course_id="+ str(self.ppt_data["course"]))
         resp = self.client.get(self.url + "?course_id="+ str(self.ppt_data["course"])) # 
-        print("get ppt resp.data: ", resp.data)
+        # print("get ppt resp.data: ", resp.data)
         self.assertSuccess(resp)    
         
 

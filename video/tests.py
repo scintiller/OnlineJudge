@@ -80,8 +80,8 @@ class SolutionVideoAPITest(SolutionVideoTestBase):
         # 创建普通用户
         self.create_user("test", "test123")
 
-    def test_get_video(self):
-        resp = self.client.get(self.url + "?id="+ str(self.video_data["id"])) 
-        # print("普通用户访问url:", self.url + "?id="+ str(self.video_data["id"]))
-        print("普通用户访问的返回resp.data: ", resp.data)
-        self.assertSuccess(resp)
+    # def test_get_video(self):
+    #     resp = self.client.get(self.url + "?id="+ str(self.video_data["id"])) 
+    #     # print("普通用户访问url:", self.url + "?id="+ str(self.video_data["id"]))
+    #     print("普通用户访问的返回resp.data: ", resp.data)
+    #     self.assertSuccess(resp)
