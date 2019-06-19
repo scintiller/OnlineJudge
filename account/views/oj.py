@@ -39,18 +39,18 @@ class VerifyCodeAPI(APIView):
         try:
             user = User.objects.get(username=username, is_disabled=False)
         except User.DoesNotExist:
-            self.error("user does not exist")
+            return self.error("user does not exist")
 
         if not code:
-            self.error("code not exist")
+            return self.error("code not exist")
 
         result = cache.ttl(code)
         if result == 0:
-            self.error("未能找到激活码")
+            return self.error("未能找到激活码")
         else:
             cache.delete(code)
             user.set_paid(True)
-            self.success()
+            return self.success()
 
 
 class UserProfileAPI(APIView):
