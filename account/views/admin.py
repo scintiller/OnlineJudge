@@ -75,7 +75,7 @@ class SetClassAPI(APIView):
             return self.error("class name not exist")
         if user_name:
             try:
-                student = User.objects.get(username=class_name)
+                student = User.objects.get(username=user_name)
             except User.DoesNotExist:
                 return self.error("Student does not exist")
         else:
