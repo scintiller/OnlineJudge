@@ -28,6 +28,7 @@ class User(AbstractBaseUser):
     email = models.TextField(null=True)
     create_time = models.DateTimeField(auto_now_add=True, null=True)
     in_class = models.ForeignKey('Class', null=True, on_delete=models.DO_NOTHING)
+    paid = models.BooleanField(default=False)
     # One of UserType
     admin_type = models.TextField(default=AdminType.REGULAR_USER)
     problem_permission = models.TextField(default=ProblemPermission.NONE)
@@ -62,6 +63,9 @@ class User(AbstractBaseUser):
 
     def is_contest_admin(self, contest):
         return self.is_authenticated and (contest.created_by == self or self.admin_type == AdminType.SUPER_ADMIN)
+
+    def set_paid(self, paid):
+        self.paid = paid
 
     class Meta:
         db_table = "user"

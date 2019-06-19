@@ -26,6 +26,31 @@ from ..serializers import (ApplyResetPasswordSerializer, ResetPasswordSerializer
 from ..serializers import (TwoFactorAuthCodeSerializer, UserProfileSerializer,
                            EditUserProfileSerializer, ImageUploadForm)
 from ..tasks import send_email_async
+from utils.cache import cache
+
+
+class VerifyCodeAPI(APIView):
+    @login_required
+    def get(self, request):
+        code = request.GET.get("code")
+        username = request.GET.get("username")
+        if not username:
+            username = request.user.username
+        try:
+            user = User.objects.get(username=username, is_disabled=False)
+        except User.DoesNotExist:
+            self.error("user does not exist")
+
+        if not code:
+            self.error("code not exist")
+
+        result = cache.ttl(code)
+        if result == 0:
+            self.error("未能找到激活码")
+        else:
+            cache.delete(code)
+            user.set_paid(True)
+            self.success()
 
 
 class UserProfileAPI(APIView):

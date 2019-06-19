@@ -16,6 +16,29 @@ from ..models import AdminType, ProblemPermission, User, UserProfile, Class
 from ..serializers import EditUserSerializer, UserAdminSerializer, GenerateUserSerializer, UsernameSerializer, ClassSerializer
 from ..serializers import ImportUserSeralizer
 
+from utils.cache import cache
+import hashlib
+import time
+
+
+class CodeAdminAPI(APIView):
+    @super_admin_required
+    def get(self, request):
+        expire_day = request.GET.get("expire_day")
+        if not expire_day:
+            expire_day = 7
+        time_stamp = int(time.time())
+        SALT = "闷声发大财"
+        hl = hashlib.md5()
+        str = SALT + time_stamp
+        hl.update(str.encode("utf8"))
+        code = hl.hexdigest()
+
+        # store into redis
+        cache.set(code, 'ALL', expire_day*24*3600)
+        data = {"code": code}
+        self.success(data)
+
 
 class ClassAPI(APIView):
     def get(self, request):
