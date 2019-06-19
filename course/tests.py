@@ -117,6 +117,7 @@ class CourseAPITest(CourseCreateTestBase):
         # 测试没有权限的用户
         self.create_user("test", "test123", paid=False)
         resp = self.client.get(f"{self.url}?limit=10")
+        # print("resp.data: ", resp.data)
         self.assertFailed(resp)
 
     def test_get_one_course(self):
@@ -193,7 +194,7 @@ class PowerPointAPITest(PowerPointTestBase, CourseCreateTestBase):
         data = {'ppt': self.created_file, 'course_id': self.course.id}
         resp = self.client.post(self.upload_url, data, format="multipart")
         self.data = resp.data["data"]
-        print("data: ", self.data)
+        # print("data: ", self.data)
         # 创建普通用户
         self.user = self.create_user("test", "test123")
         

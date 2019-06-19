@@ -1,11 +1,14 @@
 import json
 
+from account.decorators import login_required
+
 from ..api import MediaAPIView
 from ..models import ProblemSolution
 from ..serializers import ProblemSolutionSerializer
 
 class SolutionVideoAPI(MediaAPIView):
     # 普通用户获取题解
+    @login_required
     def get(self, request):
         problem_id = request.GET.get("problem_id")
 
