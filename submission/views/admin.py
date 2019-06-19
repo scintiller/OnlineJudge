@@ -45,4 +45,7 @@ class ClassSubmissionListAPI(APIView):
         if username:
             submissions = submissions.filter(username=username)
 
+        if len(submissions) == 0:
+            return self.error("未找到提交记录")
+
         return self.success(SubmissionListSerializer(submissions[0]).data)
