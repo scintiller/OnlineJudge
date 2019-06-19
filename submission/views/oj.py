@@ -11,7 +11,7 @@ from utils.api import APIView, validate_serializer
 from utils.cache import cache
 from utils.captcha import Captcha
 from utils.throttling import TokenBucket
-from ..models import Submission
+from ..models import Submission, JudgeStatus
 from ..serializers import (CreateSubmissionSerializer, SubmissionModelSerializer,
                            ShareSubmissionSerializer)
 from ..serializers import SubmissionSafeModelSerializer, SubmissionListSerializer
@@ -166,25 +166,22 @@ class SubmissionListAPI(APIView):
 class SubmissionRecordAPI(APIView):
     @login_required
     def get(self, request):
-        if not request.GET.get("start_date"):
-            return self.error("Parameter error")
-        if not request.GET.get("end_date"):
-            return self.error("Parameter error")
-
         submissions = Submission.objects.filter(contest_id__isnull=True)
         username = request.GET.get("username")
         if not username:
             username = request.user.username
 
-        start_date = datetime.strptime(request.GET.get("start_date"), '%Y-%m-%d')
-        end_date = datetime.strptime(request.GET.get("end_date"), '%Y-%m-%d')
+        today = datetime.datetime.now().date()
+        weekdelta = datetime.datetime.now().date() - datetime.timedelta(weeks=1)
         # 筛选日期
-        submissions = submissions.filter(create_time_field__range=(start_date, end_date))
+        submissions = submissions.filter(create_time__gte=weekdelta, create_time__lte=today)
         # 筛选：只看某个用户
         if username:
             submissions = submissions.filter(username=username)
         data = {}
-        data["results"] = SubmissionListSerializer(submissions, many=True).data
+
+        data["total"] = SubmissionListSerializer(submissions.values("create_time"), many=True).data
+        data["accepted"] = SubmissionListSerializer(submissions.filter(result=JudgeStatus.ACCEPTED).values("create_time"), many=True).data
         return self.success(data)
 
 
