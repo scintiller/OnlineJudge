@@ -9,10 +9,10 @@ from problem.models import Problem
 from ..models import Course, PowerPoint, CustomError
 from ..serializers import (CreateCourseSerializer, EditCourseSerializer, 
                            CourseAdminSerializer, CourseSerializer, PowerPointSerializer)
-from account.decorators import problem_permission_required, ensure_created_by
+from account.decorators import super_admin_required, ensure_created_by
 
 class CourseAPI(APIView):
-#    @course_permission_requred 需要添加课程的权限
+    @super_admin_required
     @validate_serializer(CreateCourseSerializer)
     # 创建一节新的课
     def post(self, request):
@@ -31,7 +31,7 @@ class CourseAPI(APIView):
             return self.error(e.errorinfo)
         return self.success(CourseAdminSerializer(course).data)
     
-#    @course_permission_required
+    @super_admin_required
     def get(self, request):
         course_id = request.GET.get("id")
         user = request.user
@@ -51,7 +51,7 @@ class CourseAPI(APIView):
 #            courses = courses.filter(created_by=user)
         return self.success(self.paginate_data(request, courses, CourseAdminSerializer))
 
-#    @course_permission_required
+    @super_admin_required
     @validate_serializer(EditCourseSerializer)
     # 重新编辑好以后，更新这节课
     def put(self, request):
@@ -87,7 +87,7 @@ class CourseAPI(APIView):
 
         return self.success()
 
-#   @problem_permission_required
+    @super_admin_required
     def delete(self, request):
         course_id = request.GET.get("id")
         if not course_id:
@@ -162,7 +162,7 @@ class PowerPointAPI(MediaAPIView):
     parser_classes = (MultiPartParser, FormParser)
     
     # 添加课程的PPT
-    @problem_permission_required
+    @super_admin_required
     def post(self, request):
         # 从request里取出ppt
         ppt = request.data.get("ppt", None)
@@ -184,7 +184,7 @@ class PowerPointAPI(MediaAPIView):
         return self.success(PowerPointSerializer(powerpoint).data)
 
     # 删除一个ppt（根据course_id）
-    @problem_permission_required
+    @super_admin_required
     def delete(self, request):
         # 从数据库中找ppt
         course_id = request.GET.get("course_id")

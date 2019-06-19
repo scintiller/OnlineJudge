@@ -6,6 +6,7 @@ from django.http import FileResponse
 from utils.api import CSRFExemptAPIView, APIView
 from video.api import MediaAPIView
 from account.serializers import ImageUploadForm, FileUploadForm
+from account.decorators import login_required
 from utils.shortcuts import rand_str
 
 from ..models import Course, PowerPoint
@@ -15,7 +16,13 @@ from ..serializers import CourseSerializer, PowerPointSerializer, FileDownloadSe
 logger = logging.getLogger(__name__)
 
 class CourseAPI(APIView):
+    @login_required
     def get(self, request):
+        # 判断user权限
+        user = request.user
+        if not user.is_super_admin() and not user.is_admin_role() and not user.paid:
+            return self.error("没有查看课程权限")
+            
         # 课程详情页
         course_id = request.GET.get("id")
         if course_id:
@@ -37,6 +44,7 @@ class CourseAPI(APIView):
 
 class PowerPointAPI(MediaAPIView):
     # 普通用户获取ppt
+    @login_required
     def get(self, request):
         course_id = request.GET.get("course_id")
 
@@ -52,7 +60,10 @@ class PowerPointAPI(MediaAPIView):
         else:
             return self.error("请求中需要参数course_id")
 
+###########################   File Download / File Upload  ###########################
+
 class FileDownloadAPI(APIView):
+    @login_required
     def get(self, request):
         file_type = request.GET.get("file_type").lower()
         if self.check_file_type(file_type) == False:

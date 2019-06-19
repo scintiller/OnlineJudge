@@ -9,8 +9,8 @@ class APITestCase(TestCase):
     client_class = APIClient
 
     def create_user(self, username, password, admin_type=AdminType.REGULAR_USER, login=True,
-                    problem_permission=ProblemPermission.NONE):
-        user = User.objects.create(username=username, admin_type=admin_type, problem_permission=problem_permission)
+                    problem_permission=ProblemPermission.NONE, paid=False):
+        user = User.objects.create(username=username, admin_type=admin_type, problem_permission=problem_permission, paid=paid)
         user.set_password(password)
         UserProfile.objects.create(user=user)
         user.save()

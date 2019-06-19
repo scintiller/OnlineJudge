@@ -1,22 +1,31 @@
 import json
 
+from account.decorators import login_required
+
 from ..api import MediaAPIView
 from ..models import ProblemSolution
 from ..serializers import ProblemSolutionSerializer
 
 class SolutionVideoAPI(MediaAPIView):
-    # 普通用户获取视频
+    # 普通用户获取题解
+    @login_required
     def get(self, request):
-        video_id = request.GET.get("problem_id")
+        problem_id = request.GET.get("problem_id")
 
-        if video_id:
-            # 从数据库中找视频
+        if problem_id:
+            # 从数据库中找题解
             try:
-                video = ProblemSolution.objects.get(id=video_id)
-                return self.success(ProblemSolutionSerializer(video).data)
+                problem_solution = ProblemSolution.objects.get(problem=problem_id)
             except ProblemSolution.DoesNotExist:
                 return self.error("题解不存在")
         else:
-            return self.error("请求中需要题解id")
-            
+            return self.error("请求中需要问题id")
+        
+        data = ProblemSolutionSerializer(problem_solution).data
+        url = data.pop("video")
+        data["file_name"] = url[url.rfind("/")+1:]
+        data["file_type"] = "video"
+        
+        return self.success(data)
+        
         
