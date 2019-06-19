@@ -30,7 +30,7 @@ class CodeAdminAPI(APIView):
         time_stamp = int(time.time())
         SALT = "闷声发大财"
         hl = hashlib.md5()
-        str = SALT + time_stamp
+        str = SALT + str(time_stamp)
         hl.update(str.encode("utf8"))
         code = hl.hexdigest()
 
