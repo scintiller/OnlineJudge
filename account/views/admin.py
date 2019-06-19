@@ -12,10 +12,109 @@ from utils.api import APIView, validate_serializer
 from utils.shortcuts import rand_str
 
 from ..decorators import super_admin_required
-from ..models import AdminType, ProblemPermission, User, UserProfile
-from ..serializers import EditUserSerializer, UserAdminSerializer, GenerateUserSerializer
+from ..models import AdminType, ProblemPermission, User, UserProfile, Class
+from ..serializers import EditUserSerializer, UserAdminSerializer, GenerateUserSerializer, UsernameSerializer
 from ..serializers import ImportUserSeralizer
 
+
+class SetClassAPI(APIView):
+    def get(self, request):
+        class_name = request.GET("class_name")
+        user_name = request.GET("user_name")
+        if class_name:
+            try:
+                c = Class.objects.get(class_name=class_name)
+            except Class.DoesNotExist:
+                return self.error("Class does not exist")
+        else:
+            return self.error("class name not exist")
+        if user_name:
+            try:
+                student = User.objects.get(username=class_name)
+            except User.DoesNotExist:
+                return self.error("Student does not exist")
+        else:
+            return self.error("user name not exist")
+
+        student.in_class = c
+        student.save()
+
+        return self.success()
+
+
+class ClassStudentAPI(APIView):
+    def get(self, request):
+        class_name = request.GET("class_name")
+        if class_name:
+            try:
+                c = Class.objects.get(class_name=class_name)
+            except Class.DoesNotExist:
+                return self.error("Class does not exist")
+            students = c.user_set.all()
+        else:
+            self.error("class name not exist")
+        data = {}
+        data["results"] = UsernameSerializer(students, many=True).data
+        return self.success(data)
+
+class ClassAdminAPI(APIView):
+    @super_admin_required
+    def post(self, request):
+        name = request.data["class_name"]
+        if not name:
+            self.error("class name does not exist")
+        teacher_name = request.data["teacher_name"]
+        # query teacher
+        if teacher_name:
+            try:
+                teacher = User.objects.get(username=teacher_name, is_disabled=False)
+            except User.DoesNotExist:
+                return self.error("Teacher does not exist")
+        else:
+            return self.error("teacher name does not exist")
+
+        c = Class(class_name=name, teacher=teacher)
+        c.save()
+        return self.success()
+
+    @super_admin_required
+    def put(self, request):
+        data = request.data
+        try:
+            c = Class.objects.get(id=data["id"])
+        except Class.DoesNotExist:
+            self.error("class does not exist")
+
+        if data["class_name"]:
+            # check class name
+            if Class.objects.filter(class_name=data["class_name"]).exclude(id=c.id).exists():
+                return self.error("class name already exists")
+
+            c.class_name = data["class_name"]
+            c.save()
+
+        if data["teacher_name"]:
+            teacher_name = request.data["teacher_name"]
+            try:
+                teacher = User.objects.get(username=teacher_name, is_disabled=False)
+            except User.DoesNotExist:
+                return self.error("Teacher does not exist")
+            c.teacher = teacher
+            c.save()
+
+        return self.success()
+
+    @super_admin_required
+    def delete(self, request):
+        id = request.GET.get("id")
+        if not id:
+            self.error("class id does not exist")
+        try:
+            c = Class.objects.get(id=id)
+        except Class.DoesNotExist:
+            return self.error("Class does not exist")
+        c.delete()
+        return self.success()
 
 class UserAdminAPI(APIView):
     @validate_serializer(ImportUserSeralizer)

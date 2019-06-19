@@ -17,15 +17,38 @@ from options.options import SysOptions
 from utils.api import APIView, validate_serializer, CSRFExemptAPIView
 from utils.captcha import Captcha
 from utils.shortcuts import rand_str, img2base64, datetime2str
-from ..decorators import login_required
-from ..models import User, UserProfile, AdminType
+from ..decorators import login_required, admin_role_required
+from ..models import User, UserProfile, AdminType, Class
 from ..serializers import (ApplyResetPasswordSerializer, ResetPasswordSerializer,
                            UserChangePasswordSerializer, UserLoginSerializer,
                            UserRegisterSerializer, UsernameOrEmailCheckSerializer,
-                           RankInfoSerializer, UserChangeEmailSerializer, SSOSerializer)
+                           RankInfoSerializer, UserChangeEmailSerializer, SSOSerializer, ClassSerializer)
 from ..serializers import (TwoFactorAuthCodeSerializer, UserProfileSerializer,
                            EditUserProfileSerializer, ImageUploadForm)
 from ..tasks import send_email_async
+
+class ClassAPI(APIView):
+    @login_required
+    def get(self, request):
+        username = request.GET.get("username")
+        teacher = request.user
+        try:
+            if username:
+                teacher = User.objects.get(username=username, is_disabled=False)
+            else:
+                teacher = request.user
+        except User.DoesNotExist:
+            return self.error("User does not exist")
+
+        classes = teacher.class_set.all()
+        class_array = []
+        for c in classes:
+            class_array.append(ClassSerializer(c).data)
+
+        result = {
+            "user_name": username,
+            "classes": []
+        }
 
 
 class UserProfileAPI(APIView):

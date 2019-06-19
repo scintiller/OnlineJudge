@@ -27,6 +27,7 @@ class User(AbstractBaseUser):
     username = models.TextField(unique=True)
     email = models.TextField(null=True)
     create_time = models.DateTimeField(auto_now_add=True, null=True)
+    in_class = models.ForeignKey('Class', null=True, on_delete=models.DO_NOTHING)
     # One of UserType
     admin_type = models.TextField(default=AdminType.REGULAR_USER)
     problem_permission = models.TextField(default=ProblemPermission.NONE)
@@ -65,6 +66,9 @@ class User(AbstractBaseUser):
     class Meta:
         db_table = "user"
 
+class GenderChoice(object):
+    MALE = 'male'
+    FEMALE = 'female'
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -95,6 +99,8 @@ class UserProfile(models.Model):
     school = models.TextField(null=True)
     major = models.TextField(null=True)
     language = models.TextField(null=True)
+    gender = models.TextField(default=GenderChoice.MALE)
+    age = models.IntegerField(null=True)
     # for ACM
     accepted_number = models.IntegerField(default=0)
     # for OI
@@ -117,3 +123,20 @@ class UserProfile(models.Model):
 
     class Meta:
         db_table = "user_profile"
+
+
+class Class(models.Model):
+    class_name = models.TextField(unique=True)
+    student_cnt = models.IntegerField(default=0)
+    teacher = models.ForeignKey('User', null=True, on_delete=models.DO_NOTHING)
+
+    def add_student(self):
+        self.student_cnt += 1
+        self.save()
+
+    def set_teacher(self, teacher):
+        self.teacher = teacher
+        self.save()
+
+    class Meta:
+        db_table = "class"
