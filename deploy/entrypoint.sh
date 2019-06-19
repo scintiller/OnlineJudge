@@ -1,7 +1,7 @@
 #!/bin/sh
 
-APP=/home/irving/workspace/work/online_judge/OnlineJudge/
-DATA=/home/irving/workspace/work/online_judge/OnlineJudge/data/
+APP=/app
+DATA=/data
 
 mkdir -p $DATA/log $DATA/config $DATA/ssl $DATA/test_case $DATA/public/upload $DATA/public/avatar $DATA/public/website
 
@@ -74,4 +74,4 @@ adduser -u 12000 -S -G spj server
 chown -R server:spj $DATA $APP/dist
 find $DATA/test_case -type d -exec chmod 710 {} \;
 find $DATA/test_case -type f -exec chmod 640 {} \;
-exec supervisord -c $APP/deploy/supervisord.conf
+exec supervisord -c /app/deploy/supervisord.conf
