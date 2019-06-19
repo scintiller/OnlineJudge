@@ -57,7 +57,7 @@ class ClassAPI(APIView):
 
         result = {
             "user_name": username,
-            "classes": []
+            "classes": class_array
         }
         return self.success(result)
 
