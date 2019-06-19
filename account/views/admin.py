@@ -37,7 +37,7 @@ class CodeAdminAPI(APIView):
         # store into redis
         cache.set(code, 'ALL', expire_day*24*3600)
         data = {"code": code}
-        self.success(data)
+        return self.success(data)
 
 
 class ClassAPI(APIView):
