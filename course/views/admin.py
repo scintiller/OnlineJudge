@@ -6,7 +6,7 @@ from video.api import MediaAPIView
 
 from problem.models import Problem
 
-from ..models import Course, PowerPoint
+from ..models import Course, PowerPoint, CustomError
 from ..serializers import (CreateCourseSerializer, EditCourseSerializer, 
                            CourseAdminSerializer, CourseSerializer, PowerPointSerializer)
 from account.decorators import problem_permission_required, ensure_created_by
@@ -25,9 +25,10 @@ class CourseAPI(APIView):
         # 课程创建者
         data["created_by"] = request.user
         # 创建课程，并添加课程练习和课后作业
-        course = self.create_course(data)
-        if course == None:
-            return self.error("添加的课程不存在")
+        try:
+            course = self.create_course(data)
+        except CustomError as e:
+            return self.error(e.errorinfo)
         return self.success(CourseAdminSerializer(course).data)
     
 #    @course_permission_required
@@ -57,14 +58,18 @@ class CourseAPI(APIView):
         data = request.data
         course_id = data.pop("id")
 
+        # 查询课程存不存在
         try:
             course = Course.objects.get(id=course_id)
             ensure_created_by(course, request.user)
         except Problem.DoesNotExist:
             return self.error("课程不存在")
 
-        on_class_problems = data.pop("on_class_problems")
-        after_class_problems = data.pop("after_class_problems")
+        # 查询problems存不存在
+        try:
+            data, on_class_problems, after_class_problems = self.get_problems(data)
+        except CustomError as e:
+            raise e
 
         # put操作，更新这节课的信息
         for k, v in data.items():
@@ -73,14 +78,12 @@ class CourseAPI(APIView):
 
         # 更新课堂题目
         course.on_class_problems.remove(*course.on_class_problems.all())
-        course = self.add_on_class_problems(course, on_class_problems)
-        if course == None:
-            return self.error("课堂练习题目不存在")
+        for problem in on_class_problems:
+            course.on_class_problems.add(problem)
         # 更新课后习题
         course.after_class_problems.remove(*course.after_class_problems.all())
-        course = self.add_after_class_problems(course, after_class_problems)
-        if course == None:
-            return self.error("课后题目不存在")
+        for problem in after_class_problems:
+            course.after_class_problems.add(problem)
 
         return self.success()
 
@@ -98,40 +101,60 @@ class CourseAPI(APIView):
         return self.success()
 
     # 保存课堂题目
-    def add_on_class_problems(self, course, problems):
-        if course == None:
-            return None
+    def get_on_class_problems(self, data):
+        problems = data.pop("on_class_problems")
+        on_class_problems = []
         for item in problems:
             try:
                 problem = Problem.objects.get(_id=item)
+                on_class_problems.append(problem) 
             except Problem.DoesNotExist:
-                return None
-            course.on_class_problems.add(problem)
-        return course
+                raise CustomError("课堂题目不存在")
+
+        return data, on_class_problems
 
     # 保存课后题目
-    def add_after_class_problems(self, course, problems):
-        if course == None:
-            return None
+    def get_after_class_problems(self, data):
+        problems = data.pop("after_class_problems")
+        after_class_problems = []
         for item in problems:
             try:
                 problem = Problem.objects.get(_id=item)
+                after_class_problems.append(problem)
             except Problem.DoesNotExist:
-                return None
-            course.after_class_problems.add(problem)
-        return course
+                raise CustomError("课后作业题目不存在")
+            
+        return data, after_class_problems
+    
+    def get_problems(self, data):
+        # 查找on_class_problems
+        try:
+            data, on_class_problems = self.get_on_class_problems(data)
+        except CustomError as e:
+            raise e
+        # 查找after_class_problems
+        try: 
+            data, after_class_problems = self.get_after_class_problems(data)
+        except CustomError as e:
+            raise e
+        
+        return data, on_class_problems, after_class_problems
 
     # 在数据库中创建课程
     def create_course(self, data):
-        # problems是多对多的，不能直接用create保存
-        on_class_problems = data.pop("on_class_problems")
-        after_class_problems = data.pop("after_class_problems")
+        try:
+            data, on_class_problems, after_class_problems = self.get_problems(data)
+        except CustomError as e:
+            raise e
         # 写入数据库
         course = Course.objects.create(**data)
-        # 保存课堂题目
-        course = self.add_on_class_problems(course, on_class_problems)
-        #　保存课后习题
-        course = self.add_after_class_problems(course, after_class_problems)
+        if course == None:
+            raise CustomError("课程创建失败")
+        # 保存题目
+        for problem in on_class_problems:
+            course.on_class_problems.add(problem)
+        for problem in after_class_problems:
+            course.after_class_problems.add(problem)
         return course
 
 # PPT相关接口
@@ -160,15 +183,15 @@ class PowerPointAPI(MediaAPIView):
         # 返回success
         return self.success(PowerPointSerializer(powerpoint).data)
 
-    # 删除一个ppt（根据ppt_id）
+    # 删除一个ppt（根据course_id）
     @problem_permission_required
     def delete(self, request):
         # 从数据库中找ppt
-        ppt_id = request.GET.get("id")
-        if not ppt_id:
-            return self.error("缺少id号")
+        course_id = request.GET.get("course_id")
+        if not course_id:
+            return self.error("缺少course_id号")
         try:
-            ppt = PowerPoint.objects.get(id=ppt_id)
+            ppt = PowerPoint.objects.filter(course=course_id)[0]
         except PowerPoint.DoesNotExist:
             return self.error("ppt不存在")
         # 删除ppt

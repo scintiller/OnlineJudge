@@ -45,11 +45,11 @@ class ProblemSolutionAPI(MediaAPIView):
     def delete(self, request):
         # 从数据库中找题解
         body = json.loads(request.body.decode("utf-8"))
-        if "id" not in body:
-            return self.error("没有提供题解id")
-        solution_id = body['id']
+        if "problem_id" not in body:
+            return self.error("没有提供problem_id")
+        problem_id = body['problem_id']
         try:
-            probelm_solution = ProblemSolution.objects.get(id=solution_id)
+            probelm_solution = ProblemSolution.objects.filter(problem=problem_id)[0]
         except ProblemSolution.DoesNotExist:
             return self.error("题解不存在")
         # 删除视频

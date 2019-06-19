@@ -1,9 +1,13 @@
 import os
+import logging
+
 from django.conf import settings
+from django.http import FileResponse
+
 from account.serializers import ImageUploadForm, FileUploadForm
 from utils.shortcuts import rand_str
-from utils.api import CSRFExemptAPIView
-import logging
+from utils.api import CSRFExemptAPIView, APIView
+
 
 logger = logging.getLogger(__name__)
 
@@ -73,4 +77,4 @@ class SimditorFileUploadAPIView(CSRFExemptAPIView):
             "msg": "Success",
             "file_path": f"{settings.UPLOAD_PREFIX}/{file_name}",
             "file_name": file.name})
-            
+        

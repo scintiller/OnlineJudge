@@ -57,7 +57,7 @@ class ProblemSolutionAdminAPITest(SolutionVideoTestBase):
         # 上传题解
         resp = self.test_upload_problem_solution()
         # 删除题解
-        data = {"id": resp.data['data']['id']}  
+        data = {"problem_id": resp.data['data']['problem']}  
         # print("删除题解，url: ", self.url, " data: ", data)
         resp = self.client.delete(self.url, data)
         self.assertSuccess(resp)
