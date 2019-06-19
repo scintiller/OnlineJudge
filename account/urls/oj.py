@@ -30,5 +30,5 @@ urlpatterns = [
     url(r"^open_api_appkey/?$", OpenAPIAppkeyAPI.as_view(), name="open_api_appkey_api"),
     url(r"^sso?$", SSOAPI.as_view(), name="sso_api"),
 
-    url(r"^teach_class/?$", ClassAPI.as_view(), name="class_admin_api")
+
 ]

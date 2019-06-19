@@ -13,8 +13,30 @@ from utils.shortcuts import rand_str
 
 from ..decorators import super_admin_required
 from ..models import AdminType, ProblemPermission, User, UserProfile, Class
-from ..serializers import EditUserSerializer, UserAdminSerializer, GenerateUserSerializer, UsernameSerializer
+from ..serializers import EditUserSerializer, UserAdminSerializer, GenerateUserSerializer, UsernameSerializer, ClassSerializer
 from ..serializers import ImportUserSeralizer
+
+
+class ClassAPI(APIView):
+    def get(self, request):
+        username = request.GET.get("username")
+        teacher = request.user
+        try:
+            if username:
+                teacher = User.objects.get(username=username, is_disabled=False)
+        except User.DoesNotExist:
+            return self.error("User does not exist")
+
+        classes = teacher.class_set.all()
+        class_array = []
+        for c in classes:
+            class_array.append(ClassSerializer(c).data)
+
+        result = {
+            "user_name": username,
+            "classes": []
+        }
+        self.success(result)
 
 
 class SetClassAPI(APIView):
@@ -56,6 +78,7 @@ class ClassStudentAPI(APIView):
         data = {}
         data["results"] = UsernameSerializer(students, many=True).data
         return self.success(data)
+
 
 class ClassAdminAPI(APIView):
     @super_admin_required
@@ -115,6 +138,7 @@ class ClassAdminAPI(APIView):
             return self.error("Class does not exist")
         c.delete()
         return self.success()
+
 
 class UserAdminAPI(APIView):
     @validate_serializer(ImportUserSeralizer)

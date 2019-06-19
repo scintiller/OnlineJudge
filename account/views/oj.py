@@ -27,29 +27,6 @@ from ..serializers import (TwoFactorAuthCodeSerializer, UserProfileSerializer,
                            EditUserProfileSerializer, ImageUploadForm)
 from ..tasks import send_email_async
 
-class ClassAPI(APIView):
-    @login_required
-    def get(self, request):
-        username = request.GET.get("username")
-        teacher = request.user
-        try:
-            if username:
-                teacher = User.objects.get(username=username, is_disabled=False)
-            else:
-                teacher = request.user
-        except User.DoesNotExist:
-            return self.error("User does not exist")
-
-        classes = teacher.class_set.all()
-        class_array = []
-        for c in classes:
-            class_array.append(ClassSerializer(c).data)
-
-        result = {
-            "user_name": username,
-            "classes": []
-        }
-
 
 class UserProfileAPI(APIView):
     @method_decorator(ensure_csrf_cookie)
