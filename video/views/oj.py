@@ -7,7 +7,7 @@ from ..serializers import ProblemSolutionSerializer
 class SolutionVideoAPI(MediaAPIView):
     # 普通用户获取视频
     def get(self, request):
-        video_id = request.GET.get("id")
+        video_id = request.GET.get("problem_id")
 
         if video_id:
             # 从数据库中找视频
@@ -18,6 +18,5 @@ class SolutionVideoAPI(MediaAPIView):
                 return self.error("题解不存在")
         else:
             return self.error("请求中需要题解id")
-
-        
+            
         

@@ -13,8 +13,8 @@ class CreateOrEditCourseSerializer(serializers.Serializer):
     charpter = serializers.CharField(max_length=32)
     section = serializers.CharField(max_length=32)
     content = serializers.CharField()
-    on_class_problems = serializers.ListField(child=serializers.CharField(max_length=32), allow_empty=False)
-    after_class_problems = serializers.ListField(child=serializers.CharField(max_length=32), allow_empty=False)
+    on_class_problems = serializers.ListField(child=serializers.CharField(max_length=32), allow_empty=True, default=[])
+    after_class_problems = serializers.ListField(child=serializers.CharField(max_length=32), allow_empty=True, default=[])
     
 class CreateCourseSerializer(CreateOrEditCourseSerializer):
     pass
@@ -45,5 +45,6 @@ class PowerPointSerializer(serializers.ModelSerializer):
         fields = "__all__" 
 
 # 返回PPT名字的serializer
-class PowerPointNameSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=1024)
+class FileDownloadSerializer(serializers.Serializer):
+    file_type = serializers.CharField(max_length=1024)
+    file_name = serializers.CharField(max_length=1024)

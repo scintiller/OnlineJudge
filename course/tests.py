@@ -30,15 +30,32 @@ class CourseAdminAPITest(APITestCase):
         self.assertSuccess(resp)
         return resp
     
-    def test_create_course_failure(self):
-        # 课堂练习题目不存在时添加课程失败
+    def test_create_course_spacial_case(self):
+        # 课堂练习题目列表为空时也能添加课程
         test_data = self.data
-        test_data["on_class_problems"] = ["problem_not_exist"]
+        test_data["on_class_problems"] = []
+        test_data["section"] = "1"
+        resp = self.client.post(self.url, data=test_data)
+        self.assertSuccess(resp)
+        # 课后题目列表为空时也能添加课程
+        test_data = self.data
+        test_data["after_class_problems"] = []
+        test_data["section"] = "2"
+        resp = self.client.post(self.url, data=test_data)
+        self.assertSuccess(resp)
+        # 重复添加课程失败
         resp = self.client.post(self.url, data=test_data)
         self.assertFailed(resp)
-        # 课后题目不存在时添加课程失败
+        # 课堂练习不存在时添加课程失败
         test_data = self.data
-        test_data["after_class_problems"] = ["problem_not_exist"]
+        test_data["on_class_problems"] = ["ACB1024"]
+        test_data["section"] = "3"
+        resp = self.client.post(self.url, data=test_data)
+        self.assertFailed(resp)
+        # 课后练习不存在时添加课程失败
+        test_data = self.data
+        test_data["section"] = "4"
+        test_data["on_class_problems"] = ["ACB2048"]
         resp = self.client.post(self.url, data=test_data)
         self.assertFailed(resp)
 
@@ -138,9 +155,10 @@ class PowerPointAdminAPITest(PowerPointTestBase, CourseCreateTestBase):
         # 上传ppt
         resp = self.test_upload_ppt()
         # 删除视频
-        ppt_id = resp.data['data']['id']
-        # print("delete ppt url: ", self.url+ "?id=" + str(ppt_id))
-        resp = self.client.delete(self.url+ "?id=" + str(ppt_id))
+        course_id = resp.data['data']['course']
+        url = self.url+ "?course_id=" + str(course_id)
+        # print("delete ppt url: ", url)
+        resp = self.client.delete(url)
         self.assertSuccess(resp) 
 
 # 普通用户测试获取ppt
@@ -169,5 +187,26 @@ class PowerPointAPITest(PowerPointTestBase, CourseCreateTestBase):
         resp = self.client.get(self.url + "?course_id="+ str(self.ppt_data["course"])) # 
         # print("get ppt resp.data: ", resp.data)
         self.assertSuccess(resp)    
+        
 
-    
+class DownloadFileAPITest(APITestCase):
+    def setUp(self):
+        self.url = self.reverse("download_file")
+        
+    def test_download_txt(self):
+        url = self.url + "?file_type=ppt&file_name=1.ppt"
+        # print("download url", url)
+        resp = self.client.get(url)
+        # print("resp: ", resp.file)
+
+        # self.assertSuccess(resp)
+        return resp
+
+class UploadFileAPITest(APITestCase):
+    def test_upload_file(self):
+        url = self.reverse("upload_file")
+        # print("Upload file url: ", url)
+
+    def test_upload_image(self):
+        url = self.reverse("upload_image")
+        # print("Upload image url: ", url)

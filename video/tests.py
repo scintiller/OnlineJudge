@@ -57,7 +57,7 @@ class ProblemSolutionAdminAPITest(SolutionVideoTestBase):
         # 上传题解
         resp = self.test_upload_problem_solution()
         # 删除题解
-        data = {"id": resp.data['data']['id']}  
+        data = {"problem_id": resp.data['data']['problem']}  
         # print("删除题解，url: ", self.url, " data: ", data)
         resp = self.client.delete(self.url, data)
         self.assertSuccess(resp)
@@ -80,8 +80,8 @@ class SolutionVideoAPITest(SolutionVideoTestBase):
         # 创建普通用户
         self.create_user("test", "test123")
 
-    def test_get_video(self):
-        resp = self.client.get(self.url + "?id="+ str(self.video_data["id"])) 
-        # print("普通用户访问url:", self.url + "?id="+ str(self.video_data["id"]))
-        print("普通用户访问的返回resp.data: ", resp.data)
-        self.assertSuccess(resp)
+    # def test_get_video(self):
+    #     resp = self.client.get(self.url + "?id="+ str(self.video_data["id"])) 
+    #     # print("普通用户访问url:", self.url + "?id="+ str(self.video_data["id"]))
+    #     print("普通用户访问的返回resp.data: ", resp.data)
+    #     self.assertSuccess(resp)
