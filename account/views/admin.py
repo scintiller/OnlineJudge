@@ -64,8 +64,8 @@ class ClassAPI(APIView):
 
 class SetClassAPI(APIView):
     def get(self, request):
-        class_name = request.GET("class_name")
-        user_name = request.GET("user_name")
+        class_name = request.GET.get("class_name")
+        user_name = request.GET.get("user_name")
         if class_name:
             try:
                 c = Class.objects.get(class_name=class_name)
@@ -93,7 +93,7 @@ class SetClassAPI(APIView):
 
 class ClassStudentAPI(APIView):
     def get(self, request):
-        class_name = request.GET("class_name")
+        class_name = request.GET.get("class_name")
         if class_name:
             try:
                 c = Class.objects.get(class_name=class_name)
