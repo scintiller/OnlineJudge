@@ -179,12 +179,12 @@ class SubmissionRecordAPI(APIView):
         submissions = submissions.filter(username=username)
 
         data = {"total": [], "accepted": []}
-        for i in range(1, days):
-            sub_submissions = submissions.filter(create_time__gte=start, create_time__lte=start+datetime.timedelta(days=1))
+        for i in range(days):
+            sub_submissions = submissions.filter(create_time__gt=start, create_time__lte=start+datetime.timedelta(days=1))
             total_cnt = len(sub_submissions)
             ac_cnt = len(sub_submissions.filter(result=JudgeStatus.ACCEPTED))
-            data["total"][i - 1] = total_cnt
-            data["accepted"][i - 1] = ac_cnt
+            data["total"].append(total_cnt)
+            data["accepted"].append(ac_cnt)
             start = start + datetime.timedelta(days=1)
         return self.success(data)
 
