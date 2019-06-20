@@ -168,20 +168,24 @@ class SubmissionRecordAPI(APIView):
     def get(self, request):
         submissions = Submission.objects.filter(contest_id__isnull=True)
         username = request.GET.get("username")
+        days = int(request.GET.get("days"))
+        if not days:
+            days = 7
         if not username:
             username = request.user.username
 
-        today = datetime.datetime.now().date()
-        weekdelta = datetime.datetime.now().date() - datetime.timedelta(weeks=1)
-        # 筛选日期
-        submissions = submissions.filter(create_time__gte=weekdelta, create_time__lte=today)
+        start = datetime.datetime.now().date() - datetime.timedelta(days=days)
         # 筛选：只看某个用户
-        if username:
-            submissions = submissions.filter(username=username)
-        data = {}
+        submissions = submissions.filter(username=username)
 
-        data["total"] = SubmissionListSerializer(submissions.values("create_time"), many=True).data
-        data["accepted"] = SubmissionListSerializer(submissions.filter(result=JudgeStatus.ACCEPTED).values("create_time"), many=True).data
+        data = {"total": [], "accepted": []}
+        for i in range(1, days):
+            sub_submissions = submissions.filter(create_time__gte=start, create_time__lte=start+datetime.timedelta(days=1))
+            total_cnt = len(sub_submissions)
+            ac_cnt = len(sub_submissions.filter(result=JudgeStatus.ACCEPTED))
+            data["total"][i - 1] = total_cnt
+            data["accepted"][i - 1] = ac_cnt
+            start = start + datetime.timedelta(days=1)
         return self.success(data)
 
 
