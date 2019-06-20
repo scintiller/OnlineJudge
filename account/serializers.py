@@ -145,7 +145,6 @@ class RankInfoSerializer(serializers.ModelSerializer):
 
 class ClassSerializer(serializers.ModelSerializer):
     teacher = UsernameSerializer()
-    TA = UsernameSerializer()
 
     class Meta:
         model = Class

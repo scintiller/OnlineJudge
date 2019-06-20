@@ -66,6 +66,7 @@ class User(AbstractBaseUser):
 
     def set_paid(self, paid):
         self.paid = paid
+        self.save()
 
     class Meta:
         db_table = "user"

@@ -30,8 +30,8 @@ class CodeAdminAPI(APIView):
         time_stamp = int(time.time())
         SALT = "闷声发大财"
         hl = hashlib.md5()
-        str = SALT + time_stamp
-        hl.update(str.encode("utf8"))
+        base = SALT + str(time_stamp)
+        hl.update(base.encode("utf8"))
         code = hl.hexdigest()
 
         # store into redis
@@ -57,15 +57,15 @@ class ClassAPI(APIView):
 
         result = {
             "user_name": username,
-            "classes": []
+            "classes": class_array
         }
         return self.success(result)
 
 
 class SetClassAPI(APIView):
     def get(self, request):
-        class_name = request.GET("class_name")
-        user_name = request.GET("user_name")
+        class_name = request.GET.get("class_name")
+        user_name = request.GET.get("user_name")
         if class_name:
             try:
                 c = Class.objects.get(class_name=class_name)
@@ -75,13 +75,17 @@ class SetClassAPI(APIView):
             return self.error("class name not exist")
         if user_name:
             try:
-                student = User.objects.get(username=class_name)
+                student = User.objects.get(username=user_name)
             except User.DoesNotExist:
                 return self.error("Student does not exist")
         else:
             return self.error("user name not exist")
 
+        if student.in_class:
+            return self.error("student already in a class")
+
         student.in_class = c
+        c.add_student()
         student.save()
 
         return self.success()
@@ -89,7 +93,7 @@ class SetClassAPI(APIView):
 
 class ClassStudentAPI(APIView):
     def get(self, request):
-        class_name = request.GET("class_name")
+        class_name = request.GET.get("class_name")
         if class_name:
             try:
                 c = Class.objects.get(class_name=class_name)
