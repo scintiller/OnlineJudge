@@ -3,7 +3,8 @@ from judge.tasks import judge_task
 # from judge.dispatcher import JudgeDispatcher
 from utils.api import APIView
 from ..models import Submission, Problem
-from ..serializers import SubmissionListSerializer
+from account.models import Class
+from ..serializers import SubmissionModelSerializer
 
 
 ## root 有权利让某道题重新被评判
@@ -50,8 +51,8 @@ class ClassSubmissionListAPI(APIView):
             submissions = submissions.filter(username=s.username)
 
             if len(submissions) != 0:
-                data[s.user_name] = SubmissionModelSerializer(submissions[0]).data
+                data[s.username] = SubmissionModelSerializer(submissions[0]).data
             else:
-                data[s.user_name] = {}
+                data[s.username] = {}
 
         return self.success(data)
