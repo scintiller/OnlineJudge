@@ -21,10 +21,12 @@ class ProblemSolutionAPI(MediaAPIView):
         problem_id = request.data.get("problem_id",None)
         if problem_id==None:
             return self.error("没有参数problem_id")
+        # 判断题目是否存在
         try:    
             problem = Problem.objects.get(id=problem_id)
         except Problem.DoesNotExist:
             return self.error("问题不存在")
+        # 判断和该题目关联的题解是否已存在
         try:
             ProblemSolution.objects.get(problem=problem_id)
         except ProblemSolution.DoesNotExist:    # 题解不存在，该题还没有题解, 关联问题
@@ -36,6 +38,7 @@ class ProblemSolutionAPI(MediaAPIView):
         video = request.data.get("video", None)
         if video is not None:
             data['video'] = video
+            print("[DEBUG] video information: ", video)
         # 文字题解
         text = request.data.get("text", None)
         if text is not None:

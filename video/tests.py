@@ -87,6 +87,8 @@ class SolutionVideoAPITest(SolutionVideoTestBase):
     def setUp(self):
         self.url = self.reverse("problem_solution_api")
         self.upload_url = self.reverse("problem_solution_admin_api")
+
+    def test_get_solution(self):
         # 新建题目
         admin = self.create_admin(login=False)
         problem = ProblemCreateTestBase.add_problem(DEFAULT_PROBLEM_DATA, admin)
@@ -99,13 +101,28 @@ class SolutionVideoAPITest(SolutionVideoTestBase):
         self.video_data = resp.data['data']
         # 创建普通用户
         self.create_user("test", "test123")
-
-    def test_get_solution(self):
+        # 测试
         resp = self.client.get(self.url + "?problem_id="+ str(self.video_data["problem"])) 
         # print("普通用户访问url:", self.url + "?problem_id="+ str(self.video_data["problem"]))
-        print("普通用户访问的返回resp.data: ", resp.data)
+        # print("普通用户访问的返回resp.data: ", resp.data)
         self.assertSuccess(resp)
     
+    # 测试获取没有填视频的课程
+    def test_get_solution_without_video(self):
+        # 新建题目
+        admin = self.create_admin(login=False)
+        problem = ProblemCreateTestBase.add_problem(DEFAULT_PROBLEM_DATA, admin)
+        # 新建题解
+        self.super_admin = self.create_super_admin()
+        self.data = {'problem_id': problem.id, 'text': "test solution"}
+        resp = self.client.post(self.upload_url, self.data, format="multipart")
+        # 创建普通用户
+        self.create_user("test", "test123")
+        # 测试
+        resp = self.client.get(self.url + "?problem_id="+ str(problem.id)) 
+        # print("resp.data: ", resp.data)
+        self.assertSuccess(resp)
+
     def test_get_nonexisted_solution(self):
         resp = self.client.get(self.url + "?problem_id="+ str(100)) 
         # print("resp.data: ", resp.data)
