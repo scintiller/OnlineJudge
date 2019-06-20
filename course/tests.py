@@ -213,7 +213,7 @@ class DownloadFileAPITest(APITestCase):
         
     def test_download_txt(self):
         url = self.url + "?file_type=ppt&file_name=1.ppt"
-        #print("download url", url)
+        # print("download url", url)
         resp = self.client.get(url)
         # print("resp: ", resp.data)
 
