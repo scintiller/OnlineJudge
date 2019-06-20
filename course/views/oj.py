@@ -70,7 +70,7 @@ class FileDownloadAPI(APIView):
             return self.error("该文件类型不存在："+ file_type + ", file_type参数只接受ppt/image/video/file")
         file_name = request.GET.get("file_name").lower()
         file_address = os.path.join(settings.MEDIA_ROOT, file_type, file_name)
-        # print("file address: ", file_address)
+        print("file address: ", file_address)
         try: 
             open_file = open(file_address,'rb')
         except IOError: 

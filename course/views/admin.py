@@ -169,7 +169,7 @@ class PowerPointAPI(MediaAPIView):
         if ppt==None:
             return self.error("没有上传ppt")
         data = {'ppt': ppt}
-        # 关联问题
+        # 关联课程
         course_id = request.data.get("course_id",None)
         if course_id==None:
             return self.error("没有课程id")

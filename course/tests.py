@@ -209,12 +209,13 @@ class PowerPointAPITest(PowerPointTestBase, CourseCreateTestBase):
 class DownloadFileAPITest(APITestCase):
     def setUp(self):
         self.url = self.reverse("download_file")
+        self.create_super_admin()
         
     def test_download_txt(self):
         url = self.url + "?file_type=ppt&file_name=1.ppt"
-        # print("download url", url)
+        #print("download url", url)
         resp = self.client.get(url)
-        # print("resp: ", resp.file)
+        # print("resp: ", resp.data)
 
         # self.assertSuccess(resp)
         return resp
