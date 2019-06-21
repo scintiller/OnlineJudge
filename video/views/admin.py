@@ -38,7 +38,7 @@ class ProblemSolutionAPI(MediaAPIView):
         video = request.data.get("video", None)
         if video is not None:
             data['video'] = video
-            # print("[DEBUG] video information: ", video)
+            print("[DEBUG VIDEO] video information: ", video)
         # 文字题解
         text = request.data.get("text", None)
         if text is not None:
