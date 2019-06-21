@@ -27,18 +27,18 @@ class ProblemSolutionAPI(MediaAPIView):
         except Problem.DoesNotExist:
             return self.error("问题不存在")
         # 判断和该题目关联的题解是否已存在
-        try:
-            ProblemSolution.objects.get(problem=problem_id)
-        except ProblemSolution.DoesNotExist:    # 题解不存在，该题还没有题解, 关联问题
-            data["problem"] = problem
-        else:                                   # 题解存在，该题已经有题解
+        
+        result = ProblemSolution.objects.filter(problem=problem_id) # 不可以用get,返回多个值时会报错
+        if result.exists():
             return self.error("该问题已经有题解了！")
+        else:                                       # 题解不存在，该题还没有题解, 关联问题
+            data["problem"] = problem
 
         # 视频题解
         video = request.data.get("video", None)
         if video is not None:
             data['video'] = video
-            print("[DEBUG] video information: ", video)
+            # print("[DEBUG] video information: ", video)
         # 文字题解
         text = request.data.get("text", None)
         if text is not None:
@@ -57,10 +57,12 @@ class ProblemSolutionAPI(MediaAPIView):
         if "problem_id" not in body:
             return self.error("没有提供problem_id")
         problem_id = body['problem_id']
-        try:
-            probelm_solution = ProblemSolution.objects.get(problem=problem_id)
-        except ProblemSolution.DoesNotExist:
+        # 根据题目查询题解
+        result = ProblemSolution.objects.filter(problem=problem_id)
+        # 判断题解是否存在
+        if not result.exists():
             return self.error("题解不存在")
-        # 删除视频
-        probelm_solution.delete()
+        # 存在则删除题解
+        problem_solution = result[0]
+        problem_solution.delete()
         return self.success()

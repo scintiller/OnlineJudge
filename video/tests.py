@@ -107,7 +107,7 @@ class SolutionVideoAPITest(SolutionVideoTestBase):
         # print("普通用户访问的返回resp.data: ", resp.data)
         self.assertSuccess(resp)
     
-    # 测试获取没有填视频的课程
+    # 测试获取没有填视频的题解
     def test_get_solution_without_video(self):
         # 新建题目
         admin = self.create_admin(login=False)
@@ -123,6 +123,7 @@ class SolutionVideoAPITest(SolutionVideoTestBase):
         # print("resp.data: ", resp.data)
         self.assertSuccess(resp)
 
+    # 测试题解不存在
     def test_get_nonexisted_solution(self):
         resp = self.client.get(self.url + "?problem_id="+ str(100)) 
         # print("resp.data: ", resp.data)
