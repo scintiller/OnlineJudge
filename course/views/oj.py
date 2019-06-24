@@ -67,7 +67,7 @@ class FileDownloadAPI(APIView):
     def get(self, request):
         file_type = request.GET.get("file_type").lower()
         if self.check_file_type(file_type) == False:
-            return self.error("该文件类型不存在："+ file_type + ", file_type参数只接受ppt/image/video/file")
+            return self.error("该文件类型不存在："+ file_type + ", file_type参数只接受ppt/image/video/software")
         file_name = request.GET.get("file_name")
         file_address = os.path.join(settings.MEDIA_ROOT, file_type, file_name)
         print("[DEBUG DOWNLOAD] MEDIA_ROOT: ", settings.MEDIA_ROOT, "\nfile address: ", file_address, "\n")
@@ -82,7 +82,7 @@ class FileDownloadAPI(APIView):
         return response
         
     def check_file_type(self, file_type):
-        if file_type == "ppt" or file_type == "image" or file_type == "video" or file_type == "file":
+        if file_type == "ppt" or file_type == "image" or file_type == "video" or file_type == "software":
             return True
         return False
 
