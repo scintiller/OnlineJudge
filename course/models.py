@@ -5,6 +5,7 @@ from account.models import User
 from utils.models import RichTextField
 from problem.models import Problem
 
+
 class Course(models.Model):
     # 第几章
     charpter = models.TextField()
@@ -26,11 +27,13 @@ class Course(models.Model):
         db_table = "course"
         ordering = ('create_time',)
 
+
 class PowerPoint(models.Model):
     ppt = models.FileField(blank=False, null=False, upload_to="ppt/")
     course = models.ForeignKey(Course, null=False, on_delete=models.CASCADE, 
                                 related_name="ppt")
     timestamp = models.DateTimeField(auto_now_add=True)
+
 
 class CustomError(Exception): 
     def __init__(self,ErrorInfo): 

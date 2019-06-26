@@ -10,12 +10,27 @@ from account.decorators import login_required
 from utils.shortcuts import rand_str
 
 from ..models import Course, PowerPoint
+from problem.models import  Problem
 from ..serializers import CourseSerializer, PowerPointSerializer, FileDownloadSerializer
 
 
 logger = logging.getLogger(__name__)
 
+
 class CourseAPI(APIView):
+    @staticmethod
+    def __extend_problems(problems, request):
+        if not problems or len(problems) == 0:
+            return []
+        result = []
+        for id_str in problems:
+            problem = Problem.objects.get(_id=int(id_str), contest_id__isnull=True, visible=True)
+            profile = request.user.userprofile
+            oi_problems_status = profile.oi_problems_status.get("problems", {})
+            problem["my_status"] = oi_problems_status.get(id_str, {}).get("status")
+            result.append(problem)
+        return result
+
     @login_required
     def get(self, request):
         # 判断user权限
@@ -40,7 +55,12 @@ class CourseAPI(APIView):
         
         courses = Course.objects.select_related("created_by")
         data = self.paginate_data(request, courses, CourseSerializer)
+        on_class_problems = data.get("on_class_problems")
+        after_class_problems = data.get("after_class_problems")
+        data["on_class_problems"] = self.__extend_problems(on_class_problems, request)
+        data["after_class_problems"] = self.__extend_problems(after_class_problems, request)
         return self.success(data)
+
 
 class PowerPointAPI(MediaAPIView):
     # 普通用户获取ppt
@@ -59,6 +79,7 @@ class PowerPointAPI(MediaAPIView):
                 return self.error("ppt不存在")
         else:
             return self.error("请求中需要参数course_id")
+
 
 ###########################   File Download / File Upload  ###########################
 
@@ -85,6 +106,7 @@ class FileDownloadAPI(APIView):
         if file_type == "ppt" or file_type == "image" or file_type == "video" or file_type == "software":
             return True
         return False
+
 
 # 上传图片
 class ImageUploadAPIView(CSRFExemptAPIView):
@@ -124,6 +146,7 @@ class ImageUploadAPIView(CSRFExemptAPIView):
             "msg": "Success"
             })
 
+
 # 上传文件
 class FileUploadAPIView(CSRFExemptAPIView):
     request_parsers = ()
@@ -154,4 +177,3 @@ class FileUploadAPIView(CSRFExemptAPIView):
             "success": True,
             "msg": "Success",
             })
-        
