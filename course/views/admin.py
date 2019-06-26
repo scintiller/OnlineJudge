@@ -49,7 +49,7 @@ class CourseAPI(APIView):
         # 根据权限筛选
 #        if not user.can_mgmt_all_course():
 #            courses = courses.filter(created_by=user)
-        return self.success(self.paginate_data(request, courses, CourseAdminSerializer))
+        return self.success(CourseAdminSerializer(courses).data)
 
     @super_admin_required
     @validate_serializer(EditCourseSerializer)
