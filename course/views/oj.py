@@ -11,6 +11,7 @@ from utils.shortcuts import rand_str
 
 from ..models import Course, PowerPoint
 from problem.models import  Problem
+from problem.serializers import ProblemSerializer
 from ..serializers import CourseSerializer, PowerPointSerializer, FileDownloadSerializer
 
 
@@ -23,7 +24,8 @@ class CourseAPI(APIView):
             return []
         result = []
         for id_str in problems:
-            problem = Problem.objects.get(_id=int(id_str), contest_id__isnull=True, visible=True)
+            p = Problem.objects.get(_id=int(id_str), contest_id__isnull=True, visible=True)
+            problem = ProblemSerializer(p).data
             profile = request.user.userprofile
             oi_problems_status = profile.oi_problems_status.get("problems", {})
             problem["my_status"] = oi_problems_status.get(id_str, {}).get("status")
