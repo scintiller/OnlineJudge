@@ -81,9 +81,6 @@ class SetClassAPI(APIView):
         else:
             return self.error("user name not exist")
 
-        if student.in_class:
-            return self.error("student already in a class")
-
         student.in_class = c
         c.add_student()
         student.save()
