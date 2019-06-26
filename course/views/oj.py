@@ -45,7 +45,12 @@ class CourseAPI(APIView):
             try:
                 course = Course.objects.select_related("created_by")\
                     .get(id=course_id)
-                return self.success(CourseSerializer(course).data)
+                data = CourseSerializer(course).data
+                on_class_problems = data.get("on_class_problems")
+                after_class_problems = data.get("after_class_problems")
+                data["on_class_problems"] = self.extend_problems(on_class_problems, request)
+                data["after_class_problems"] = self.extend_problems(after_class_problems, request)
+                return self.success(data)
             except Course.DoesNotExist:
                 return self.error("课程不存在")
 
@@ -56,10 +61,6 @@ class CourseAPI(APIView):
 
         courses = Course.objects.select_related("created_by")
         data = self.paginate_data(request, courses, CourseSerializer)
-        on_class_problems = data.get("on_class_problems")
-        after_class_problems = data.get("after_class_problems")
-        data["on_class_problems"] = self.extend_problems(on_class_problems, request)
-        data["after_class_problems"] = self.extend_problems(after_class_problems, request)
         return self.success(data)
 
 
