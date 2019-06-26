@@ -18,8 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class CourseAPI(APIView):
-    @staticmethod
-    def __extend_problems(problems, request):
+    def extend_problems(self, problems, request):
         if not problems or len(problems) == 0:
             return []
         result = []
@@ -57,8 +56,8 @@ class CourseAPI(APIView):
         data = self.paginate_data(request, courses, CourseSerializer)
         on_class_problems = data.get("on_class_problems")
         after_class_problems = data.get("after_class_problems")
-        data["on_class_problems"] = self.__extend_problems(on_class_problems, request)
-        data["after_class_problems"] = self.__extend_problems(after_class_problems, request)
+        data["on_class_problems"] = self.extend_problems(on_class_problems, request)
+        data["after_class_problems"] = self.extend_problems(after_class_problems, request)
         return self.success(data)
 
 
