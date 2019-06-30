@@ -11,8 +11,8 @@ from .views.admin import CourseAPI
 from problem.tests import DEFAULT_PROBLEM_DATA, ProblemCreateTestBase
 
 DEFAULT_COURSE_DATA = {"charpter": "初级班", "section": "第一节", "title": "test course", 
-                        "content": "<p>test course</p>", "on_class_problems": ["A-110"],
-                        "after_class_problems": ["A-110"],} 
+                        "content": "<p>test course</p>", "on_class_problems": ["110"],
+                        "after_class_problems": ["110"],} 
                         #  
 
 # 测试课程admin接口

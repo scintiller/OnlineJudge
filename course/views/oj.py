@@ -55,13 +55,13 @@ class CourseAPI(APIView):
                 return self.error("课程不存在")
 
         # 课程列表
-        limit = request.GET.get("limit")
-        if not limit:
-            return self.error("需要给出每页的课程数限制！")
+        # limit = request.GET.get("limit")
+        # if not limit:
+        #     return self.error("需要给出每页的课程数限制！")
 
         courses = Course.objects.select_related("created_by")
-        data = self.paginate_data(request, courses, CourseSerializer)
-        return self.success(data)
+        # data = self.paginate_data(request, courses, CourseSerializer)
+        return self.success(CourseSerializer(courses, many=True).data)
 
 
 class PowerPointAPI(MediaAPIView):

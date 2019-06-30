@@ -110,7 +110,7 @@ class SolutionVideoAPITest(APITestCase):
         self.create_user("test", "test123")
         # 测试
         resp = self.client.get(self.url + "?problem_id="+ str(problem.id)) 
-        # print("resp.data: ", resp.data)
+        print("resp.data: ", resp.data)
         self.assertSuccess(resp)
 
     # 测试题解不存在
