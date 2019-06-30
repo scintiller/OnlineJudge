@@ -2,7 +2,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 import json
 
 from ..serializers import ProblemSolutionSerializer
-from ..api import MediaAPIView
+from utils.api import APIView
 from ..models import ProblemSolution
 
 from utils.api import validate_serializer
@@ -10,7 +10,7 @@ from problem.models import Problem
 from account.decorators import problem_permission_required, ensure_created_by
 
 
-class ProblemSolutionAPI(MediaAPIView):
+class ProblemSolutionAPI(APIView):
     parser_classes = (MultiPartParser, FormParser)
     
     # 添加问题的题解
@@ -26,8 +26,8 @@ class ProblemSolutionAPI(MediaAPIView):
             problem = Problem.objects.get(id=problem_id)
         except Problem.DoesNotExist:
             return self.error("问题不存在")
+
         # 判断和该题目关联的题解是否已存在
-        
         result = ProblemSolution.objects.filter(problem=problem_id) # 不可以用get,返回多个值时会报错
         if result.exists():
             return self.error("该问题已经有题解了！")
@@ -38,7 +38,6 @@ class ProblemSolutionAPI(MediaAPIView):
         video = request.data.get("video", None)
         if video is not None:
             data['video'] = video
-            print("[DEBUG VIDEO] video information: ", video)
         # 文字题解
         text = request.data.get("text", None)
         if text is not None:

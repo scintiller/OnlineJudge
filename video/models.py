@@ -5,7 +5,7 @@ from utils.models import RichTextField
 
 class ProblemSolution(models.Model):
     # 视频题解
-    video = models.FileField(blank=True, null=True, upload_to="video/")
+    video = models.TextField()
     # 文字题解
     text = RichTextField(blank=True, null=True)
     # 关联题目

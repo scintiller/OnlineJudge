@@ -7,24 +7,14 @@ from utils.api.tests import APITestCase
 from problem.tests import DEFAULT_PROBLEM_DATA, ProblemCreateTestBase
 
 from .views.admin import ProblemSolutionAPI
-
-class SolutionVideoTestBase(APITestCase):
-    # 生成文件
-    def create_test_file(self, path):
-        f = open(path, 'w')
-        f.write('test123\n')
-        f.close()
-        f = open(path, 'rb')
-        return f
-
         
 # admin上传删除视频的测试
-class ProblemSolutionAdminAPITest(SolutionVideoTestBase):
+class ProblemSolutionAdminAPITest(APITestCase):
     def setUp(self):
         self.url = self.reverse("problem_solution_admin_api")
         # 生成文件
         self.super_admin = self.create_super_admin()
-        self.created_file = self.create_test_file('/tmp/test_upload')
+
     
     # 测试题解上传
     def test_upload_problem_solution(self):
@@ -32,9 +22,9 @@ class ProblemSolutionAdminAPITest(SolutionVideoTestBase):
         admin = self.create_admin()
         self.problem = ProblemCreateTestBase.add_problem(DEFAULT_PROBLEM_DATA, admin)
         #　请求数据
-        self.data = {'video': self.created_file, 'text': "Test Test", 'problem_id': self.problem.id}
+        self.data = {'video': "test_video_name", 'text': "Test Test", 'problem_id': self.problem.id}
         # print("题解上传. url: ", self.url, "  data: ", self.data)
-        resp = self.client.post(self.url, self.data, format="multipart")
+        resp = self.client.post(self.url, self.data)
         self.assertSuccess(resp)
         return resp
     
@@ -46,21 +36,21 @@ class ProblemSolutionAdminAPITest(SolutionVideoTestBase):
         # 测试没有填视频
         data = {'problem_id': self.problem.id}
         # print("可以不填视频, data：", data)
-        resp = self.client.post(self.url, data, format="multipart")
+        resp = self.client.post(self.url, data)
         self.assertSuccess(resp)
 
     # 测试题解上传失败
     def test_upload_solution_without_problem(self):
         # 测试没有填题号
-        data = {'video': self.created_file}
-        resp = self.client.post(self.url, data, format="multipart")
+        data = {'video': "test_video_name"}
+        resp = self.client.post(self.url, data)
         # print("resp.data: ", resp.data)
         self.assertFailed(resp)
     
     # 测试重复上传
     def test_upload_solution_twice(self):
         self.test_upload_problem_solution()
-        resp = self.client.post(self.url, self.data, format="multipart")
+        resp = self.client.post(self.url, self.data)
         # print(resp.data)
         self.assertFailed(resp)
 
@@ -83,7 +73,7 @@ class ProblemSolutionAdminAPITest(SolutionVideoTestBase):
         self.assertFailed(resp)
 
 # 普通用户获取题解的测试
-class SolutionVideoAPITest(SolutionVideoTestBase):
+class SolutionVideoAPITest(APITestCase):
     def setUp(self):
         self.url = self.reverse("problem_solution_api")
         self.upload_url = self.reverse("problem_solution_admin_api")
@@ -94,10 +84,10 @@ class SolutionVideoAPITest(SolutionVideoTestBase):
         problem = ProblemCreateTestBase.add_problem(DEFAULT_PROBLEM_DATA, admin)
         # 生成文件
         self.super_admin = self.create_super_admin()
-        created_file = self.create_test_file('/tmp/test_upload')
+        
         # 新建题解
-        self.data = {'video': created_file, 'problem_id': problem.id, 'text': "test solution"}
-        resp = self.client.post(self.upload_url, self.data, format="multipart")
+        self.data = {'video': "test_video_name", 'problem_id': problem.id, 'text': "test solution"}
+        resp = self.client.post(self.upload_url, self.data)
         self.video_data = resp.data['data']
         # 创建普通用户
         self.create_user("test", "test123")
@@ -115,7 +105,7 @@ class SolutionVideoAPITest(SolutionVideoTestBase):
         # 新建题解
         self.super_admin = self.create_super_admin()
         self.data = {'problem_id': problem.id, 'text': "test solution"}
-        resp = self.client.post(self.upload_url, self.data, format="multipart")
+        resp = self.client.post(self.upload_url, self.data)
         # 创建普通用户
         self.create_user("test", "test123")
         # 测试
