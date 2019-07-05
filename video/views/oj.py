@@ -23,7 +23,7 @@ class SolutionVideoAPI(APIView):
         request = GetVideoPlayAuthRequest.GetVideoPlayAuthRequest()
         request.set_accept_format('JSON')
         request.set_VideoId(vid)
-        request.set_AuthTimeout(3600 * 5)
+        request.set_AuthInfoTimeout(3600 * 5)
         try:
             response = json.loads(client.do_action_with_exception(request))
         except Exception as e:
