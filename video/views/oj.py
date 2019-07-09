@@ -10,7 +10,7 @@ import json
 from aliyunsdkcore.client import AcsClient
 from aliyunsdkvod.request.v20170321 import GetPlayInfoRequest
 
-accessId = "LTAljPB9sZYsRfVN"
+accessId = "LTAIjPB9sZYsRfVN"
 accessKeySecret = "AdQoaj6YtehfEUEY5CrSFTD4vRueVU"
 regionId = "cn-shanghai"
 
