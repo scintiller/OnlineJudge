@@ -10,8 +10,8 @@ import json
 from aliyunsdkcore.client import AcsClient
 from aliyunsdkvod.request.v20170321 import GetVideoPlayAuthRequest
 
-accessId = "LTAIiCguUbtEbEnB"
-accessKeySecret = "6878WQdrA93To3zkchGIiRbavmXaLE"
+accessId = "LTAIjPB9sZYsRfVN"
+accessKeySecret = "AdQoaj6YtehfEUEY5CrSFTD4vRueVU"
 regionId = "cn-shanghai"
 
 
