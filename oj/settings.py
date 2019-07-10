@@ -53,6 +53,8 @@ LOCAL_APPS = [
     'judge',
     'course',
     'video',
+    'companyAnnounce1',
+    'companyAnnounce2',
 ]
 
 INSTALLED_APPS = VENDOR_APPS + LOCAL_APPS
