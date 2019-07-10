@@ -8,10 +8,10 @@ from ..serializers import ProblemSolutionSerializer
 
 import json
 from aliyunsdkcore.client import AcsClient
-from aliyunsdkvod.request.v20170321 import GetPlayInfoRequest
+from aliyunsdkvod.request.v20170321 import GetVideoPlayAuthRequest
 
-accessId = "LTAIiCguUbtEbEnB"
-accessKeySecret = "6878WQdrA93To3zkchGIiRbavmXaLE"
+accessId = "LTAIjPB9sZYsRfVN"
+accessKeySecret = "AdQoaj6YtehfEUEY5CrSFTD4vRueVU"
 regionId = "cn-shanghai"
 
 
@@ -20,10 +20,10 @@ class SolutionVideoAPI(APIView):
     def __getPlayAuth(self, vid):
         connectTimeout = 3
         client = AcsClient(accessId, accessKeySecret, regionId, auto_retry=True, max_retry_time=3, timeout=connectTimeout)
-        request = GetPlayInfoRequest.GetPlayInfoRequest()
+        request = GetVideoPlayAuthRequest.GetVideoPlayAuthRequest()
         request.set_accept_format('JSON')
         request.set_VideoId(vid)
-        request.set_AuthTimeout(3600 * 5)
+        request.set_AuthInfoTimeout(3600 * 5)
         try:
             response = json.loads(client.do_action_with_exception(request))
         except Exception as e:
